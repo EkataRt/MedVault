@@ -1,0 +1,18 @@
+<ion-card class="analytics-card">
+  <ion-card-content>
+    <div class="analytics-card__header">
+      <h3 class="analytics-card__title">Monthly Consistency</h3>
+      <ion-icon name="bar-chart-outline" class="analytics-card__icon" />
+    </div>
+
+    @if (isLoading()) {
+      <div class="analytics-card__shimmer">
+        <div class="shimmer shimmer--chart"></div>
+      </div>
+    } @else {
+      <div class="analytics-card__chart-wrap">
+        <canvas #chartCanvas></canvas>
+      </div>
+    }
+  </ion-card-content>
+</ion-card>

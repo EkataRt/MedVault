@@ -1,0 +1,157 @@
+ion-checkbox {
+  --border-color: var(--ion-border-color);
+  --border-radius: 6px;
+  --checkbox-background-checked: var(--ion-color-primary);
+  --checkmark-color: var(--ion-color-primary-contrast);
+  --size: 22px;
+  flex-shrink: 0;
+}
+
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-item-option {
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 72px;
+}
+
+.dose-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dose-row {
+  align-items: center;
+  background: var(--ion-background-color);
+  border: 1px solid var(--ion-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 8px 12px;
+  transition: opacity 0.15s ease;
+
+  &.taken {
+    opacity: 0.45;
+
+    .dose-time {
+      text-decoration: line-through;
+    }
+  }
+}
+
+.dose-time {
+  color: var(--ion-text-color);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.empty-state {
+  align-items: center;
+  color: var(--ion-color-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 48px 0;
+  text-align: center;
+
+  ion-icon {
+    font-size: 40px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+.error-text {
+  color: var(--ion-color-danger);
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.item-condition {
+  align-items: center;
+  color: var(--ion-color-medium);
+  display: flex;
+  font-size: 13px;
+  gap: 4px;
+
+  ion-icon {
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+}
+
+.item-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 0;
+}
+
+.item-detail {
+  color: var(--ion-color-medium);
+  font-size: 13px;
+}
+
+.item-meal {
+  align-items: center;
+  color: var(--ion-color-medium);
+  display: flex;
+  font-size: 13px;
+  gap: 4px;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+}
+
+.item-meta {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.item-title {
+  color: var(--ion-text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.list-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.list-title {
+  color: var(--ion-text-color);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.medicine-item {
+  --background: var(--ion-card-background);
+  --border-radius: 12px;
+  --inner-padding-end: 12px;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --padding-start: 16px;
+  margin-bottom: 10px;
+}

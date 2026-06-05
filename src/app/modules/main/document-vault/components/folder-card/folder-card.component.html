@@ -1,0 +1,43 @@
+<ion-item-sliding>
+  <ion-item class="folder-item" button detail="false" (click)="onCardClick()">
+    <div class="folder-icon" slot="start">
+      <ion-icon name="folder" />
+    </div>
+
+    <ion-label>
+      <h3 class="folder-name">{{ folder().name }}</h3>
+      <p class="folder-meta">
+        @if (subfolderCount() > 0) {
+          <span>
+            {{ subfolderCount() }}
+            {{ subfolderCount() === 1 ? "folder" : "folders" }}
+          </span>
+        }
+        @if (subfolderCount() > 0 && fileCount() > 0) {
+          <span class="meta-sep">·</span>
+        }
+        @if (fileCount() > 0) {
+          <span>
+            {{ fileCount() }} {{ fileCount() === 1 ? "file" : "files" }}
+          </span>
+        }
+        @if (subfolderCount() === 0 && fileCount() === 0) {
+          <span>Empty</span>
+        }
+      </p>
+    </ion-label>
+
+    <ion-icon name="chevron-forward-outline" slot="end" class="chevron" />
+  </ion-item>
+
+  <ion-item-options side="end">
+    <ion-item-option color="primary" (click)="onRename()">
+      <ion-icon slot="top" name="pencil-outline" />
+      Rename
+    </ion-item-option>
+    <ion-item-option color="danger" (click)="onDelete()">
+      <ion-icon slot="top" name="trash-outline" />
+      Delete
+    </ion-item-option>
+  </ion-item-options>
+</ion-item-sliding>

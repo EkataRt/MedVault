@@ -1,0 +1,119 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-breadcrumbs>
+      <ion-breadcrumb (click)="onBack()">Settings</ion-breadcrumb>
+      <ion-breadcrumb>Edit Profile</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" class="edit-profile">
+    @if (errorMessage()) {
+      <ion-note class="edit-profile__error" color="danger">
+        {{ errorMessage() }}
+      </ion-note>
+    }
+
+    @if (isSaved()) {
+      <ion-note class="edit-profile__success" color="success">
+        <ion-icon name="checkmark-circle-outline" />
+        Changes saved successfully.
+      </ion-note>
+    }
+
+    <ion-list class="edit-profile__list" lines="none">
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="fullName"
+          label="FULL NAME"
+          labelPlacement="stacked"
+          placeholder="Your full name"
+          type="text"
+        />
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="bloodType"
+          label="BLOOD TYPE"
+          labelPlacement="stacked"
+          placeholder="e.g. A+"
+          type="text"
+        />
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="age"
+          label="AGE"
+          labelPlacement="stacked"
+          placeholder="Your age"
+          type="number"
+        />
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-select
+          formControlName="sex"
+          label="SEX"
+          labelPlacement="stacked"
+          placeholder="Select sex"
+        >
+          <ion-select-option value="Male">Male</ion-select-option>
+          <ion-select-option value="Female">Female</ion-select-option>
+          <ion-select-option value="Other">Other</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="weight"
+          label="WEIGHT (KG)"
+          labelPlacement="stacked"
+          placeholder="Weight in kg"
+          type="number"
+        />
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="height"
+          label="HEIGHT (CM)"
+          labelPlacement="stacked"
+          placeholder="Height in cm"
+          type="number"
+        />
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="lastCheckup"
+          label="LAST CHECKUP"
+          labelPlacement="stacked"
+          type="date"
+        />
+      </ion-item>
+
+      <ion-item class="edit-profile__item">
+        <ion-input
+          formControlName="allergies"
+          label="ALLERGIES"
+          labelPlacement="stacked"
+          placeholder="e.g. Peanuts, Penicillin"
+          type="text"
+        />
+      </ion-item>
+    </ion-list>
+
+    <ion-button
+      class="edit-profile__save"
+      expand="block"
+      [disabled]="form.invalid || isSaving()"
+      (click)="onSave()"
+    >
+      <ion-icon name="save-outline" slot="start" />
+      {{ isSaving() ? "Saving..." : "Save Changes" }}
+    </ion-button>
+  </form>
+</ion-content>

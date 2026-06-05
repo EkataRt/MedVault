@@ -1,0 +1,57 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px;
+
+  &__icon {
+    color: var(--ion-color-primary);
+    font-size: 20px;
+    margin-right: 12px;
+
+    &--danger {
+      color: var(--ion-color-danger);
+    }
+
+    &--logout {
+      color: var(--ion-color-warning);
+    }
+  }
+
+  &__item {
+    --background: var(--ion-card-background);
+    --border-radius: 12px;
+    --inner-padding-end: 16px;
+    --padding-bottom: 4px;
+    --padding-start: 16px;
+    --padding-top: 4px;
+    margin-bottom: 12px;
+
+    &--logout {
+      margin-top: 4px;
+    }
+  }
+
+  &__label--danger {
+    color: var(--ion-color-danger);
+  }
+
+  &__label--logout {
+    color: var(--ion-color-warning);
+  }
+
+  &__list {
+    background: transparent;
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 0;
+  }
+}
+
+ion-breadcrumbs {
+  padding: 8px 16px;
+}
+
+ion-toolbar {
+  --background: var(--ion-toolbar-background);
+}

@@ -1,0 +1,64 @@
+<ion-modal [isOpen]="isOpen()" (didDismiss)="onDismiss()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Upload Document</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="onDismiss()">
+            <ion-icon name="close-outline" slot="icon-only" />
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      @if (errorMessage()) {
+        <p class="error-text">{{ errorMessage() }}</p>
+      }
+
+      <div class="dropzone" (click)="fileInput.click()">
+        @if (previewUrl()) {
+          <img class="preview-img" [src]="previewUrl()!" alt="preview" />
+        } @else {
+          <div class="dropzone-placeholder">
+            <ion-icon name="image-outline" />
+            <span>Tap to select an image</span>
+          </div>
+        }
+      </div>
+
+      <input
+        #fileInput
+        type="file"
+        accept="image/*"
+        style="display: none"
+        (change)="onFileSelected($event)"
+      />
+
+      <div class="form-group">
+        <ion-input
+          label="DOCUMENT NAME"
+          labelPlacement="stacked"
+          placeholder="e.g. X-Ray Upper Jaw"
+          [value]="documentName()"
+          (ionInput)="onNameChange($any($event.target).value)"
+        />
+      </div>
+    </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button
+          expand="block"
+          class="submit-btn"
+          [disabled]="
+            !selectedFile() || !documentName().trim() || isUploading()
+          "
+          (click)="submit()"
+        >
+          {{ isUploading() ? "Uploading..." : "Upload Document" }}
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,153 @@
+<ion-modal [isOpen]="isOpen()" (didDismiss)="onDismiss()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ modalTitle() }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="onDismiss()">
+            <ion-icon name="close-outline" slot="icon-only" />
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      @if (errorMessage) {
+        <p class="error-text">{{ errorMessage }}</p>
+      }
+
+      @if (!editingAppointment()) {
+        <div class="type-selector">
+          <button
+            class="type-card"
+            [class.active]="appointmentType === 'new'"
+            (click)="setAppointmentType('new')"
+          >
+            <div class="type-icon">
+              <ion-icon name="add-outline" />
+            </div>
+            <div class="type-label">New Appointment</div>
+            <div class="type-sub">Schedule a fresh visit</div>
+          </button>
+          <button
+            class="type-card"
+            [class.active]="appointmentType === 'followup'"
+            (click)="setAppointmentType('followup')"
+          >
+            <div class="type-icon">
+              <ion-icon name="refresh-outline" />
+            </div>
+            <div class="type-label">Follow-up</div>
+            <div class="type-sub">Based on previous visit</div>
+          </button>
+        </div>
+      }
+
+      @if (appointmentType === "new") {
+        <div class="form-body" [formGroup]="newForm">
+          <div class="form-group">
+            <label class="field-label">TITLE</label>
+            <ion-input
+              placeholder="e.g. Annual Checkup"
+              formControlName="title"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="field-label">DATE</label>
+              <ion-input type="date" formControlName="date" />
+            </div>
+            <div class="form-group">
+              <label class="field-label">TIME</label>
+              <ion-input type="time" formControlName="time" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="field-label">DOCTOR</label>
+            <ion-input
+              placeholder="e.g. Dr. Sarah Wilson"
+              formControlName="doctor"
+            />
+          </div>
+          <div class="form-group">
+            <label class="field-label">HOSPITAL / CLINIC</label>
+            <ion-input
+              placeholder="Enter hospital name"
+              formControlName="hospital"
+            />
+          </div>
+          <div class="form-group">
+            <label class="field-label">LOCATION</label>
+            <ion-input
+              placeholder="e.g. Downtown Branch"
+              formControlName="location"
+            />
+          </div>
+          <div class="form-group">
+            <label class="field-label">PURPOSE</label>
+            <ion-input
+              placeholder="e.g. Dental, Cardiology"
+              formControlName="category"
+            />
+          </div>
+        </div>
+      }
+
+      @if (appointmentType === "followup") {
+        <div class="form-body" [formGroup]="followUpForm">
+          <div class="form-group">
+            <label class="field-label">PREVIOUS APPOINTMENT</label>
+            <ion-select
+              placeholder="Select an appointment"
+              formControlName="previousAppointmentId"
+            >
+              @for (appt of appointments(); track appt.id) {
+                <ion-select-option [value]="appt?.id">
+                  {{ appt?.title }} ({{ formatDate(appt?.date ?? "") }})
+                </ion-select-option>
+              }
+            </ion-select>
+          </div>
+          <div class="form-group">
+            <label class="field-label">INTERVAL</label>
+            <ion-input
+              placeholder="e.g. 3 months, 2 weeks"
+              formControlName="interval"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="field-label">FOLLOW-UP DATE</label>
+              <ion-input type="date" formControlName="date" />
+            </div>
+            <div class="form-group">
+              <label class="field-label">TIME</label>
+              <ion-input type="time" formControlName="time" />
+            </div>
+          </div>
+        </div>
+      }
+    </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button
+          expand="block"
+          class="submit-btn"
+          [disabled]="isSubmitting"
+          (click)="submitAppointment()"
+        >
+          {{
+            isSubmitting
+              ? editingAppointment()
+                ? "Updating..."
+                : "Scheduling..."
+              : editingAppointment()
+                ? "Update Appointment"
+                : "Schedule Appointment"
+          }}
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

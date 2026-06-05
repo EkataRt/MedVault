@@ -1,0 +1,7 @@
+{
+  "name": "MedVault-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

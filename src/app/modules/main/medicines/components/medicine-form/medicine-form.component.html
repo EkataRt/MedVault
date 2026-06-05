@@ -1,0 +1,167 @@
+<ion-modal [isOpen]="isOpen()" (didDismiss)="onDismiss()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ modalTitle() }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="onDismiss()">
+            <ion-icon name="close-outline" slot="icon-only" />
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      @if (errorMessage) {
+        <p class="error-text">{{ errorMessage }}</p>
+      }
+
+      <div class="form-body" [formGroup]="form">
+        <div class="form-group">
+          <label class="field-label">MEDICINE NAME</label>
+          <ion-input placeholder="e.g. Paracetamol" formControlName="name" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label">DOSAGE</label>
+            <ion-input placeholder="e.g. 500mg" formControlName="dosage" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">TIMES PER DAY</label>
+            <ion-input type="number" [min]="1" formControlName="timesPerDay" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">CONDITION</label>
+          <ion-input
+            placeholder="e.g. Fever, Hypertension"
+            formControlName="condition"
+          />
+        </div>
+
+        <div class="form-group">
+          <p class="field-label">MEAL PREFERENCE</p>
+          <div class="segment-toggle">
+            <button
+              class="segment-btn"
+              [class.active]="form.controls.mealPreference.value === 'before'"
+              (click)="setMealPreference('before')"
+            >
+              Before
+            </button>
+            <button
+              class="segment-btn"
+              [class.active]="form.controls.mealPreference.value === 'after'"
+              (click)="setMealPreference('after')"
+            >
+              After
+            </button>
+            <button
+              class="segment-btn"
+              [class.active]="form.controls.mealPreference.value === 'any'"
+              (click)="setMealPreference('any')"
+            >
+              Any
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">START DATE</label>
+          <ion-input type="date" formControlName="startDate" />
+        </div>
+
+        <div class="form-group">
+          <p class="field-label">END DATE MODE</p>
+          <div class="segment-toggle">
+            <button
+              class="segment-btn"
+              [class.active]="!useDuration"
+              (click)="setUseDuration(false)"
+            >
+              End Date
+            </button>
+            <button
+              class="segment-btn"
+              [class.active]="useDuration"
+              (click)="setUseDuration(true)"
+            >
+              Duration
+            </button>
+          </div>
+        </div>
+
+        @if (!useDuration) {
+          <div class="form-group">
+            <label class="field-label">END DATE</label>
+            <ion-input type="date" formControlName="endDate" />
+          </div>
+        } @else {
+          <div class="form-row">
+            <div class="form-group">
+              <label class="field-label">AMOUNT</label>
+              <ion-input
+                type="number"
+                placeholder="e.g. 3"
+                [min]="1"
+                formControlName="durationAmount"
+              />
+            </div>
+            <div class="form-group">
+              <label class="field-label">UNIT</label>
+              <ion-select formControlName="durationUnit">
+                <ion-select-option value="days">Days</ion-select-option>
+                <ion-select-option value="weeks">Weeks</ion-select-option>
+                <ion-select-option value="months">Months</ion-select-option>
+              </ion-select>
+            </div>
+          </div>
+
+          @if (calculatedEndDate()) {
+            <div class="calculated-box">
+              <span class="calculated-label">Calculated end date</span>
+              <span class="calculated-value">{{ calculatedEndDate() }}</span>
+            </div>
+          }
+        }
+
+        @if (timesArray.length > 0) {
+          <div class="times-list" [formArrayName]="'times'">
+            <p class="field-label">DOSE TIMES</p>
+            @for (control of timesArray.controls; track $index) {
+              <div class="time-row">
+                <span class="time-index">Dose {{ $index + 1 }}</span>
+                <ion-input
+                  type="time"
+                  class="time-input"
+                  [formControlName]="$index"
+                />
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button
+          expand="block"
+          class="submit-btn"
+          [disabled]="isSubmitting"
+          (click)="submitMedicine()"
+        >
+          {{
+            isSubmitting
+              ? "Saving..."
+              : editingMedicine()
+                ? "Update Medicine"
+                : "Add Medicine"
+          }}
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

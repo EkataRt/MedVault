@@ -1,0 +1,49 @@
+<ion-card class="appt-card" (click)="navigateToAppointments()">
+  <ion-card-content>
+    <div class="appt-card__header">
+      <h3 class="appt-card__title">Upcoming Appointments</h3>
+      <ion-icon name="calendar-outline" class="appt-card__icon" />
+    </div>
+
+    @if (isLoading()) {
+      <ion-list lines="none" class="appt-card__list">
+        @for (item of [1, 2, 3]; track item) {
+          <ion-item class="appt-item appt-item--shimmer">
+            <div class="shimmer-lines">
+              <div class="shimmer shimmer--wide"></div>
+              <div class="shimmer shimmer--medium"></div>
+              <div class="shimmer shimmer--narrow"></div>
+            </div>
+          </ion-item>
+        }
+      </ion-list>
+    } @else if (appointments().length === 0) {
+      <div class="appt-card__empty">
+        <ion-icon name="calendar-outline" />
+        <p>No upcoming appointments</p>
+      </div>
+    } @else {
+      <ion-list lines="none" class="appt-card__list">
+        @for (appt of appointments(); track appt.id) {
+          <ion-item class="appt-item">
+            <div class="appt-item__main">
+              <span class="appt-item__title">{{ appt?.title }}</span>
+              <span class="appt-item__date"
+                >{{ formatDate(appt.date) }}, {{ appt?.time }}</span
+              >
+              <span class="appt-item__doctor">{{ appt?.doctor }}</span>
+            </div>
+            <ion-badge
+              slot="end"
+              class="appt-item__badge appt-item__badge--{{
+                appt?.category?.toLowerCase()
+              }}"
+            >
+              {{ appt?.category }}
+            </ion-badge>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  </ion-card-content>
+</ion-card>

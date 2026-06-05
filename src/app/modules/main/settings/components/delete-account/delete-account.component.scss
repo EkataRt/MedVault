@@ -1,0 +1,85 @@
+.delete-account {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+
+  &__btn {
+    --border-radius: 12px;
+  }
+
+  &__item {
+    --background: var(--ion-card-background);
+    --border-radius: 10px;
+    --padding-bottom: 4px;
+    --padding-start: 16px;
+    --padding-top: 4px;
+    margin-bottom: 8px;
+  }
+
+  &__list {
+    background: transparent;
+    padding: 0;
+  }
+
+  &__note {
+    align-items: flex-start;
+    border-radius: 10px;
+    display: flex;
+    font-size: 0.875rem;
+    gap: 8px;
+    line-height: 1.5;
+    padding: 12px 14px;
+    white-space: normal;
+
+    ion-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    &--confirm {
+      background: rgba(var(--ion-color-danger-rgb), 0.08);
+      color: var(--ion-color-danger);
+    }
+
+    &--error {
+      color: var(--ion-color-danger);
+    }
+  }
+
+  &__warning-banner {
+    align-items: flex-start;
+    background: rgba(var(--ion-color-warning-rgb), 0.1);
+    border-left: 3px solid var(--ion-color-warning);
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  &__warning-icon {
+    color: var(--ion-color-warning);
+    flex-shrink: 0;
+    font-size: 20px;
+    margin-top: 1px;
+  }
+
+  &__warning-text {
+    color: var(--ion-text-color);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+ion-breadcrumbs {
+  padding: 8px 16px;
+}
+
+ion-input {
+  --highlight-color-focused: var(--ion-color-primary);
+}
+
+ion-toolbar {
+  --background: var(--ion-toolbar-background);
+}

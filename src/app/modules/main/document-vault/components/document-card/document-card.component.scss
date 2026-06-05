@@ -1,0 +1,60 @@
+.chevron {
+  color: var(--ion-color-medium);
+  font-size: 16px;
+}
+
+.document-date {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.document-item {
+  --background: var(--ion-card-background);
+  --border-radius: 12px;
+  --inner-padding-end: 12px;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --padding-start: 12px;
+  margin-bottom: 10px;
+  min-height: 72px;
+
+  &::part(native) {
+    align-items: center;
+    min-height: 72px;
+  }
+
+  ion-label {
+    margin-inline-start: 12px;
+  }
+}
+
+.document-name {
+  color: var(--ion-text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.document-thumb {
+  align-items: center;
+  background: var(--ion-background-color);
+  border-radius: 8px;
+  display: flex;
+  flex-shrink: 0;
+  height: 52px;
+  justify-content: center;
+  overflow: hidden;
+  width: 52px;
+
+  img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+}
+
+ion-item-option {
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 72px;
+}

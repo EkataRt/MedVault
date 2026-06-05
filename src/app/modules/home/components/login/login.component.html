@@ -1,0 +1,52 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="card-header">
+      <div class="icon-wrapper">
+        <ion-icon name="person-outline" />
+      </div>
+      <h2>Welcome back</h2>
+      <p>Login to your MedVault account</p>
+    </div>
+
+    <div class="form-fields">
+      <ion-input
+        fill="outline"
+        label="Username"
+        labelPlacement="floating"
+        type="text"
+        [value]="username()"
+        (ionInput)="username.set($event.detail.value ?? '')"
+      >
+        <ion-icon name="person-outline" slot="start" />
+      </ion-input>
+
+      <ion-input
+        fill="outline"
+        label="Password"
+        labelPlacement="floating"
+        type="password"
+        [value]="password()"
+        (ionInput)="password.set($event.detail.value ?? '')"
+      >
+        <ion-icon name="lock-closed-outline" slot="start" />
+      </ion-input>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error-message">{{ errorMessage() }}</p>
+    }
+
+    <ion-button expand="block" [disabled]="isLoading()" (click)="onLogin()">
+      @if (isLoading()) {
+        <ion-spinner name="crescent" />
+      } @else {
+        Login
+      }
+    </ion-button>
+
+    <p class="switch-auth">
+      Don't have an account?
+      <a routerLink="/home/signup">Sign Up</a>
+    </p>
+  </div>
+</div>

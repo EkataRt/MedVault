@@ -1,0 +1,114 @@
+@import "@ionic/angular/css/core.css";
+
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+@font-face {
+  font-display: swap;
+  font-family: "DM Sans";
+  font-style: italic;
+  font-weight: 100 1000;
+  src: url("/assets/fonts/DMSans-Italic-VariableFont_opsz,wght.ttf")
+    format("truetype");
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  src: url("/assets/fonts/DMSans-VariableFont_opsz,wght.ttf") format("truetype");
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--ion-color-primary);
+  text-decoration: none;
+}
+
+html,
+body {
+  font-family: var(--ion-font-family);
+  font-size: 16px;
+  height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--ion-text-color);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2rem;
+}
+h2 {
+  font-size: 1.5rem;
+}
+h3 {
+  font-size: 1.25rem;
+}
+h4 {
+  font-size: 1rem;
+}
+h5 {
+  font-size: 0.875rem;
+}
+h6 {
+  font-size: 0.75rem;
+}
+
+ion-button {
+  --border-radius: 8px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+ion-card {
+  --border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin: 0;
+}
+
+ion-content {
+  --padding-bottom: 16px;
+  --padding-end: 16px;
+  --padding-start: 16px;
+  --padding-top: 16px;
+}
+
+ion-input,
+ion-select,
+ion-textarea {
+  --border-radius: 8px;
+}
+
+.ion-page {
+  background: var(--ion-background-color);
+}
+
+p {
+  color: var(--ion-text-color);
+  line-height: 1.6;
+}

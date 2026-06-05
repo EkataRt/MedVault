@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Medicines</ion-title>
+    <ion-buttons slot="end">
+      <app-notification-bell />
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (errorMessage()) {
+  <p class="error-text">{{ errorMessage() }}</p>
+  }
+
+  <div class="page-sections">
+    <section class="calendar-section">
+      <app-calendar mode="medicines" />
+    </section>
+
+    <section class="list-section">
+      <app-medicine-list
+        [medicines]="filteredMedicines()"
+        (editRequested)="openEdit($event)"
+        (medicineDeleted)="onMedicineDeleted($event)"
+        (medicineUpdated)="onMedicineUpdated($event)"
+      />
+    </section>
+  </div>
+</ion-content>
+
+<app-medicine-form
+  [isOpen]="formOpen()"
+  [editingMedicine]="editingMedicine()"
+  (formSubmitted)="onFormSubmitted($event)"
+  (modalClosed)="closeForm()"
+/>
+
+<app-fab-button icon="add-outline" (fabClick)="openForm()" />

@@ -1,0 +1,132 @@
+@if (isLoading) {
+  <ion-card class="info-card info-card--shimmer">
+    <ion-card-content>
+      <div class="shimmer shimmer--avatar"></div>
+      <div class="shimmer-lines">
+        <div class="shimmer shimmer--line shimmer--wide"></div>
+        <div class="shimmer shimmer--line shimmer--medium"></div>
+        <div class="shimmer shimmer--line shimmer--narrow"></div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+} @else if (!profile) {
+  <ion-card class="info-card info-card--empty">
+    <ion-card-content>
+      <div class="info-card__empty-avatar">
+        <ion-icon name="person-outline" />
+      </div>
+      <div>
+        <h2 class="info-card__empty-title">Welcome to MedVault!</h2>
+        <p class="info-card__empty-desc">
+          You haven't set up your health profile yet. Add your details to get
+          personalised insights.
+        </p>
+      </div>
+      <ion-button
+        fill="outline"
+        shape="round"
+        size="small"
+        (click)="onEditClick()"
+      >
+        <ion-icon name="create-outline" slot="start" />
+        Set up profile
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+} @else {
+  <ion-card class="info-card">
+    <ion-card-content>
+      <div class="info-card__header">
+        <div class="info-card__avatar">{{ initials }}</div>
+        <div class="info-card__identity">
+          <h2 class="info-card__name">{{ profile.fullName }}</h2>
+          <div class="info-card__quick-stats">
+            <span class="info-card__quick-stat">
+              <ion-icon
+                [name]="
+                  profile.sex === 'Female' ? 'female-outline' : 'male-outline'
+                "
+              />
+              {{ profile.sex }}
+            </span>
+            <span class="info-card__quick-divider">·</span>
+            <span class="info-card__quick-stat">{{ profile.age }} yrs</span>
+            <span class="info-card__quick-divider">·</span>
+            <span class="info-card__quick-stat">
+              <ion-icon name="water-outline" />
+              {{ profile.bloodType }}
+            </span>
+          </div>
+        </div>
+        <ion-button
+          fill="outline"
+          shape="round"
+          size="small"
+          (click)="onEditClick()"
+        >
+          <ion-icon name="create-outline" slot="start" />
+          Edit
+        </ion-button>
+      </div>
+
+      <div class="info-card__stats info-card__stats--row1">
+        <div class="info-card__stat">
+          <span class="info-card__stat-label">
+            <ion-icon name="fitness-outline" />
+            Height
+          </span>
+          <span class="info-card__stat-value">{{ profile.height }} cm</span>
+        </div>
+
+        <div class="info-card__stat">
+          <span class="info-card__stat-label">
+            <ion-icon name="barbell-outline" />
+            Weight
+          </span>
+          <span class="info-card__stat-value">{{ profile.weight }} kg</span>
+        </div>
+
+        @if (bmi() !== null) {
+          <div class="info-card__stat">
+            <span class="info-card__stat-label">
+              <ion-icon name="person-outline" />
+              BMI
+            </span>
+            <div class="info-card__bmi-inline">
+              <span class="info-card__stat-value">{{ bmi() }}</span>
+              <ion-badge
+                [color]="
+                  bmiCategory() === BmiCategory.Normal
+                    ? 'success'
+                    : bmiCategory() === BmiCategory.Overweight
+                      ? 'warning'
+                      : 'danger'
+                "
+              >
+                {{ bmiCategory() }}
+              </ion-badge>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="info-card__stats info-card__stats--row2">
+        <div class="info-card__stat">
+          <span class="info-card__stat-label">
+            <ion-icon name="calendar-outline" />
+            Last Checkup
+          </span>
+          <span class="info-card__stat-value">{{ profile.lastCheckup }}</span>
+        </div>
+
+        <div class="info-card__stat">
+          <span class="info-card__stat-label">
+            <ion-icon name="heart-outline" />
+            Allergies
+          </span>
+          <span class="info-card__stat-value">{{ allergiesDisplay }}</span>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+}

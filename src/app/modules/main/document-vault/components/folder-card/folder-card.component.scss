@@ -1,0 +1,61 @@
+.chevron {
+  color: var(--ion-color-medium);
+  font-size: 16px;
+}
+
+.folder-icon {
+  align-items: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  border-radius: 10px;
+  color: var(--ion-color-primary);
+  display: flex;
+  font-size: 22px;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.folder-item {
+  --background: var(--ion-card-background);
+  --border-radius: 12px;
+  --inner-padding-end: 12px;
+  --inner-padding-start: 0;
+  --padding-end: 0;
+  --padding-start: 12px;
+  margin-bottom: 10px;
+  min-height: 64px;
+
+  &::part(native) {
+    align-items: center;
+    min-height: 64px;
+  }
+
+  ion-label {
+    margin-inline-start: 12px;
+  }
+}
+
+.folder-meta {
+  align-items: center;
+  color: var(--ion-color-medium);
+  display: flex;
+  font-size: 12px;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.folder-name {
+  color: var(--ion-text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+ion-item-option {
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 72px;
+}
+
+.meta-sep {
+  opacity: 0.5;
+}

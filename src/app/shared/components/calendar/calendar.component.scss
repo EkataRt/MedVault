@@ -1,0 +1,219 @@
+:host(.mode-dashboard) {
+  .day-cell {
+    min-height: 36px;
+  }
+}
+
+ion-card {
+  border: 1px solid var(--ion-border-color);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: 0;
+  width: 100%;
+
+  ion-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 16px;
+  }
+}
+
+ion-button.nav-btn {
+  --border-color: var(--ion-border-color);
+  --border-radius: 8px;
+  --color: var(--ion-color-medium);
+  --padding-end: 0;
+  --padding-start: 0;
+  height: 32px;
+  margin: 0;
+  width: 32px;
+}
+
+.appointment-color {
+  color: var(--ion-color-danger);
+}
+
+.appointment-icon {
+  color: var(--ion-color-danger);
+}
+
+.calendar-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.day-cell {
+  align-items: center;
+  border-radius: 8px;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 48px;
+  padding: 4px 2px;
+  position: relative;
+  transition: background 0.15s ease;
+
+  &.has-events {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(var(--ion-color-primary-rgb), 0.06);
+    }
+  }
+
+  &.other-month .day-number {
+    color: var(--ion-color-medium);
+    opacity: 0.4;
+  }
+
+  &.selected {
+    background: rgba(var(--ion-color-primary-rgb), 0.08);
+  }
+
+  &.today .day-number {
+    background: var(--ion-color-primary);
+    border-radius: 6px;
+    color: var(--ion-color-primary-contrast);
+    font-weight: 700;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    width: 26px;
+  }
+}
+
+.day-number {
+  color: var(--ion-text-color);
+  font-size: 13px;
+  font-weight: 500;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  width: 26px;
+}
+
+.days-grid {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.event-dot {
+  background: var(--ion-color-primary);
+  border-radius: 50%;
+  display: block;
+  height: 5px;
+  width: 5px;
+}
+
+.event-icon {
+  align-items: center;
+  border-radius: 50%;
+  display: flex;
+  font-size: 10px;
+  height: 14px;
+  justify-content: center;
+  width: 14px;
+}
+
+.event-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+}
+
+.event-popup {
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.medicine-color {
+  color: var(--ion-color-primary);
+}
+
+.medicine-icon {
+  color: var(--ion-color-primary);
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+.month-label {
+  color: var(--ion-text-color);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.popup-date {
+  color: var(--ion-text-color);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.popup-event {
+  align-items: flex-start;
+  display: flex;
+  gap: 6px;
+}
+
+.popup-event-sub {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+}
+
+.popup-event-title {
+  color: var(--ion-text-color);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.popup-icon {
+  flex-shrink: 0;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.popup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.popup-section-label {
+  color: var(--ion-color-medium);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.weekday-cell {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 0;
+  text-align: center;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}

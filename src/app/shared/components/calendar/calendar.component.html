@@ -1,0 +1,127 @@
+<ion-card class="calendar-card">
+  <ion-card-content>
+    <div class="calendar-header">
+      <span class="month-label">{{ monthLabel() }}</span>
+      <div class="nav-buttons">
+        <ion-button
+          fill="outline"
+          size="small"
+          class="nav-btn"
+          (click)="prevMonth()"
+        >
+          <ion-icon name="chevron-back-outline" slot="icon-only" />
+        </ion-button>
+        <ion-button
+          fill="outline"
+          size="small"
+          class="nav-btn"
+          (click)="nextMonth()"
+        >
+          <ion-icon name="chevron-forward-outline" slot="icon-only" />
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="weekday-row">
+      @for (day of weekDays; track $index) {
+        <div class="weekday-cell">{{ day }}</div>
+      }
+    </div>
+
+    <div class="days-grid">
+      @for (day of calendarDays(); track day?.date?.toISOString()) {
+        <div
+          class="day-cell"
+          [class.other-month]="!day?.isCurrentMonth"
+          [class.today]="day?.isToday"
+          [class.has-events]="
+            ((day?.appointments?.length ?? 0) > 0 ||
+              (day?.medicines?.length ?? 0) > 0) &&
+            day?.isCurrentMonth
+          "
+          [class.selected]="hoveredDate()?.date === day?.date"
+          (click)="onDateTap(day)"
+        >
+          <span class="day-number">{{ day?.date?.getDate() }}</span>
+
+          @if (day?.isCurrentMonth) {
+            <div class="event-icons">
+              @if (mode() === "dashboard") {
+                @if (
+                  (day?.appointments?.length ?? 0) > 0 ||
+                  (day?.medicines?.length ?? 0) > 0
+                ) {
+                  <span class="event-dot"></span>
+                }
+              }
+
+              @if (mode() === "appointments") {
+                @for (appt of day?.appointments; track appt?.id) {
+                  <span class="event-icon appointment-icon">
+                    <ion-icon name="location" />
+                  </span>
+                }
+              }
+
+              @if (mode() === "medicines") {
+                @for (med of day?.medicines; track med?.id) {
+                  <span class="event-icon medicine-icon">
+                    <ion-icon src="assets/icons/pill.svg" />
+                  </span>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (hoveredDate(); as hovered) {
+      <div class="event-popup">
+        <div class="popup-date">
+          {{ formatPopupDate(hovered!.date) }}
+        </div>
+
+        @if ((hovered?.appointments?.length ?? 0) > 0) {
+          <div class="popup-section">
+            <div class="popup-section-label">Appointments</div>
+            @for (appt of hovered?.appointments; track appt?.id) {
+              <div class="popup-event">
+                <ion-icon
+                  name="location"
+                  class="popup-icon appointment-color"
+                />
+                <div>
+                  <div class="popup-event-title">{{ appt?.title }}</div>
+                  <div class="popup-event-sub">
+                    {{ appt?.time }} · {{ appt?.hospital }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if ((hovered?.medicines?.length ?? 0) > 0) {
+          <div class="popup-section">
+            <div class="popup-section-label">Medicines</div>
+            @for (med of hovered?.medicines; track med?.id) {
+              <div class="popup-event">
+                <ion-icon
+                  src="assets/icons/pill.svg"
+                  class="popup-icon medicine-color"
+                />
+                <div>
+                  <div class="popup-event-title">{{ med?.name }}</div>
+                  <div class="popup-event-sub">
+                    {{ med?.dosage }} · {{ med?.times?.join(", ") }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </ion-card-content>
+</ion-card>

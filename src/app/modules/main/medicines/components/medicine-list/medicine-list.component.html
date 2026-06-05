@@ -1,0 +1,89 @@
+<div class="list-header">
+  <h2 class="list-title">All Medicines</h2>
+</div>
+
+@if (errorMessage()) {
+  <p class="error-text">{{ errorMessage() }}</p>
+}
+
+<ion-list lines="none">
+  @for (med of medicines(); track med?.id) {
+    <ion-item-sliding>
+      <ion-item class="medicine-item">
+        <div class="item-content" slot="start">
+          <div class="item-meta">
+            {{ formatDateRange(med?.startDate ?? "", med?.endDate ?? "") }}
+          </div>
+
+          <div class="item-title">{{ med?.name }}</div>
+
+          <div class="item-detail">
+            {{ med?.dosage }} · {{ med?.frequency }}
+          </div>
+
+          <div class="item-condition">
+            <ion-icon name="fitness-outline" />
+            <span>{{ med?.condition }}</span>
+          </div>
+
+          <div class="item-meal">
+            <ion-icon name="restaurant-outline" />
+            <span>{{
+              formatMealPreference(med?.mealPreference ?? "any")
+            }}</span>
+          </div>
+
+          <div class="dose-list">
+            @for (time of med?.times; track time; let i = $index) {
+              <div class="dose-row" [class.taken]="isDoseTakenToday(med, i)">
+                <span class="dose-time">{{ time }}</span>
+                <ion-checkbox
+                  [checked]="isDoseTakenToday(med, i)"
+                  [attr.aria-label]="
+                    isDoseTakenToday(med, i)
+                      ? 'Mark as pending'
+                      : 'Mark as taken'
+                  "
+                  (ionChange)="toggleDoseStatus(med, i)"
+                />
+              </div>
+            }
+          </div>
+        </div>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="primary" (click)="onEditRequested(med)">
+          <ion-icon slot="top" name="create-outline" />
+          Edit
+        </ion-item-option>
+        <ion-item-option
+          color="danger"
+          (click)="openDeleteConfirm(med?.id ?? '')"
+        >
+          <ion-icon slot="top" name="trash-outline" />
+          Delete
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  } @empty {
+    <div class="empty-state">
+      <ion-icon name="medkit-outline" />
+      <p>No medicines found</p>
+    </div>
+  }
+</ion-list>
+
+<app-confirm-modal
+  title="Delete Medicine"
+  [message]="
+    'Are you sure you want to delete ' +
+    (deleteTarget()?.name ?? 'this medicine') +
+    '? This cannot be undone.'
+  "
+  confirmLabel="Delete"
+  [isDanger]="true"
+  [isOpen]="deleteTargetId() !== null"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+/>

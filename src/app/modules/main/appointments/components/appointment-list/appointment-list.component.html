@@ -1,0 +1,85 @@
+<div class="list-header">
+  <h2 class="list-title">All Appointments</h2>
+</div>
+
+@if (errorMessage()) {
+  <p class="error-text">{{ errorMessage() }}</p>
+}
+
+<ion-list lines="none">
+  @for (appt of appointments(); track appt.id) {
+    <ion-item-sliding>
+      <ion-item class="appointment-item" [class.visited]="appt?.visited">
+        <div class="item-content" slot="start">
+          <div class="item-meta">
+            <span class="item-date">{{ formatDate(appt?.date ?? "") }}</span>
+            <span class="item-dot">·</span>
+            <span class="item-time">{{ appt?.time }}</span>
+            @if (appt?.isFollowUp) {
+              <span class="followup-badge">Follow-up</span>
+            }
+          </div>
+
+          <div class="item-title">{{ appt?.title }}</div>
+
+          <div class="item-location">
+            <ion-icon name="location-outline" />
+            <span>{{ appt?.hospital }}</span>
+            @if (appt?.location) {
+              <span class="location-sub">{{ appt?.location }}</span>
+            }
+          </div>
+
+          <ion-chip class="category-chip" color="medium">
+            {{ appt?.category }}
+          </ion-chip>
+        </div>
+
+        <div slot="end" class="visited-wrap">
+          <button
+            class="visited-btn"
+            [class.checked]="appt?.visited"
+            (click)="toggleVisited(appt)"
+          >
+            @if (appt?.visited) {
+              <ion-icon name="checkmark-outline" />
+            }
+          </button>
+        </div>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="primary" (click)="onEditRequested(appt)">
+          <ion-icon slot="top" name="create-outline" />
+          Edit
+        </ion-item-option>
+        <ion-item-option
+          color="danger"
+          (click)="openDeleteConfirm(appt?.id ?? '')"
+        >
+          <ion-icon slot="top" name="trash-outline" />
+          Delete
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  } @empty {
+    <div class="empty-state">
+      <ion-icon name="calendar-outline" />
+      <p>No appointments found</p>
+    </div>
+  }
+</ion-list>
+
+<app-confirm-modal
+  title="Delete Appointment"
+  [message]="
+    'Are you sure you want to delete ' +
+    (deleteTarget()?.title ?? 'this appointment') +
+    '? This cannot be undone.'
+  "
+  confirmLabel="Delete"
+  [isDanger]="true"
+  [isOpen]="deleteTargetId() !== null"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()"
+/>

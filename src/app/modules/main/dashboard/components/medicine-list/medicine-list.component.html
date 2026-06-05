@@ -1,0 +1,63 @@
+<ion-card class="med-card" (click)="navigateToMedicines()">
+  <ion-card-content>
+    <div class="med-card__header">
+      <h3 class="med-card__title">Today's Medicines</h3>
+      <ion-icon name="medkit-outline" class="med-card__icon" />
+    </div>
+
+    @if (isLoading()) {
+      <div class="med-card__list">
+        @for (item of [1, 2]; track item) {
+          <div class="med-item med-item--shimmer">
+            <div class="med-item__left">
+              <div class="shimmer shimmer--wide"></div>
+              <div class="shimmer shimmer--medium"></div>
+            </div>
+            <div class="med-item__right">
+              <div class="shimmer shimmer--dose"></div>
+              <div class="shimmer shimmer--dose"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (medicines().length === 0) {
+      <div class="med-card__empty">
+        <ion-icon name="medkit-outline" />
+        <p>No medicines for today</p>
+      </div>
+    } @else {
+      <div class="med-card__list">
+        @for (med of medicines(); track med.id) {
+          <div class="med-item">
+            <div class="med-item__left">
+              <span class="med-item__name">{{ med?.name }}</span>
+              <span class="med-item__detail"
+                >{{ med?.dosage }}, {{ med?.frequency }}</span
+              >
+            </div>
+
+            <div class="med-item__right" (click)="$event.stopPropagation()">
+              @for (time of med?.times; track time; let i = $index) {
+                <div
+                  class="med-item__dose-row"
+                  [class.med-item__dose-row--taken]="isDoseTakenToday(med, i)"
+                >
+                  <span class="med-item__time">{{ time }}</span>
+                  <ion-checkbox
+                    [checked]="isDoseTakenToday(med, i)"
+                    [attr.aria-label]="
+                      isDoseTakenToday(med, i)
+                        ? 'Mark as pending'
+                        : 'Mark as taken'
+                    "
+                    (ionChange)="toggleDoseStatus(med, i)"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </ion-card-content>
+</ion-card>

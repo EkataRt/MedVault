@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Appointments</ion-title>
+    <ion-buttons slot="end">
+      <app-notification-bell />
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (errorMessage()) {
+  <p class="error-text">{{ errorMessage() }}</p>
+  }
+
+  <div class="page-sections">
+    <section class="calendar-section">
+      <app-calendar mode="appointments" />
+    </section>
+
+    <section class="list-section">
+      <app-appointment-list
+        [appointments]="filteredAppointments()"
+        (editRequested)="openEdit($event)"
+        (appointmentDeleted)="onAppointmentDeleted($event)"
+        (appointmentUpdated)="onAppointmentUpdated($event)"
+      />
+    </section>
+  </div>
+</ion-content>
+
+<app-appointment-form
+  [isOpen]="formOpen()"
+  [editingAppointment]="editingAppointment()"
+  [appointments]="appointments()"
+  (formSubmitted)="onFormSubmitted($event)"
+  (modalClosed)="closeForm()"
+/>
+
+<app-fab-button icon="add-outline" (fabClick)="openForm()" />

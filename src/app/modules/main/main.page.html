@@ -1,0 +1,35 @@
+<ion-header class="glass-header">
+  <ion-toolbar>
+    <ion-title slot="start">{{ title() }}</ion-title>
+    <ion-buttons slot="end">
+      <app-notification-bell />
+      <ion-button
+        routerLink="/main/settings"
+        routerLinkActive="settings-active"
+      >
+        <ion-icon name="settings-outline" slot="icon-only" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="dashboard" href="/main/dashboard">
+      <ion-icon name="home-outline" />
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="appointments" href="/main/appointments">
+      <ion-icon name="calendar-outline" />
+      <ion-label>Appointments</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="document-vault" href="/main/document-vault">
+      <ion-icon name="folder-outline" />
+      <ion-label>Documents</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="medicines" href="/main/medicines">
+      <ion-icon src="assets/icons/pill-large.svg" />
+      <ion-label>Medicines</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

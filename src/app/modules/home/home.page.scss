@@ -1,0 +1,25 @@
+ion-toolbar {
+  --background: var(--ion-card-background);
+}
+
+.app-name {
+  color: var(--ion-color-tertiary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.logo {
+  border-radius: 8px;
+  height: 36px;
+  object-fit: contain;
+  width: 36px;
+}
+
+.toolbar-content {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 0;
+  width: 100%;
+}

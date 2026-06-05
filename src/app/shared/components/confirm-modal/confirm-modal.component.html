@@ -1,0 +1,38 @@
+<ion-modal
+  [isOpen]="isOpen()"
+  (didDismiss)="onCancel()"
+  [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1"
+  [handle]="false"
+>
+  <ng-template>
+    <div class="confirm-wrapper">
+      <div class="confirm-icon" [class.danger]="isDanger()">
+        <ion-icon name="trash-outline" />
+      </div>
+
+      <div class="confirm-text">
+        <h2 class="confirm-title">{{ title() }}</h2>
+        <p class="confirm-message">{{ message() }}</p>
+      </div>
+
+      <div class="confirm-actions">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="medium"
+          (click)="onCancel()"
+        >
+          Cancel
+        </ion-button>
+        <ion-button
+          expand="block"
+          [color]="isDanger() ? 'danger' : 'primary'"
+          (click)="onConfirm()"
+        >
+          {{ confirmLabel() }}
+        </ion-button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

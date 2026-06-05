@@ -1,0 +1,91 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-breadcrumbs>
+      <ion-breadcrumb (click)="onBack()">Settings</ion-breadcrumb>
+      <ion-breadcrumb>Delete Account</ion-breadcrumb>
+    </ion-breadcrumbs>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" class="delete-account">
+    <div class="delete-account__warning-banner">
+      <ion-icon name="warning-outline" class="delete-account__warning-icon" />
+      <p class="delete-account__warning-text">
+        Once you delete your account, all of your medical data, documents, and
+        appointments will be permanently removed. This action cannot be undone.
+      </p>
+    </div>
+
+    <ion-list class="delete-account__list" lines="none">
+      <ion-item class="delete-account__item">
+        <ion-input
+          formControlName="email"
+          label="CONFIRM EMAIL"
+          labelPlacement="stacked"
+          placeholder="your@email.com"
+          type="email"
+        />
+      </ion-item>
+
+      <ion-item class="delete-account__item">
+        <ion-input
+          formControlName="password"
+          label="CONFIRM PASSWORD"
+          labelPlacement="stacked"
+          placeholder="••••••••"
+          type="password"
+        />
+      </ion-item>
+    </ion-list>
+
+    @if (errorMessage()) {
+      <ion-note
+        class="delete-account__note delete-account__note--error"
+        color="danger"
+      >
+        <ion-icon name="alert-circle-outline" />
+        {{ errorMessage() }}
+      </ion-note>
+    }
+
+    @if (showConfirm()) {
+      <ion-note class="delete-account__note delete-account__note--confirm">
+        <ion-icon name="nuclear-outline" />
+        WARNING: This action is permanent and all your medical history will be
+        lost forever. Are you absolutely sure?
+      </ion-note>
+
+      <ion-button
+        class="delete-account__btn"
+        color="danger"
+        expand="block"
+        (click)="onConfirmDelete()"
+      >
+        <ion-icon name="trash-outline" slot="start" />
+        Yes, Delete My Account Forever
+      </ion-button>
+
+      <ion-button
+        class="delete-account__btn"
+        expand="block"
+        fill="clear"
+        (click)="onCancel()"
+      >
+        Cancel
+      </ion-button>
+    } @else {
+      <ion-button
+        class="delete-account__btn"
+        color="danger"
+        expand="block"
+        fill="outline"
+        [disabled]="form.invalid"
+        (click)="onPermanentlyDelete()"
+      >
+        <ion-icon name="trash-outline" slot="start" />
+        Permanently Delete Account
+      </ion-button>
+    }
+  </form>
+</ion-content>

@@ -1,0 +1,194 @@
+ion-card {
+  border: 1px solid var(--ion-border-color);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  margin: 0;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  width: 100%;
+
+  &:hover {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  ion-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+}
+
+ion-list {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+}
+
+ion-item {
+  --background: var(--ion-background-color);
+  --border-radius: 12px;
+  --inner-padding-end: 12px;
+  --padding-bottom: 12px;
+  --padding-end: 0;
+  --padding-start: 12px;
+  --padding-top: 12px;
+  border: 1px solid var(--ion-border-color);
+  border-radius: 12px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    --background: rgba(var(--ion-color-primary-rgb), 0.04);
+  }
+
+  &.appt-item--shimmer {
+    pointer-events: none;
+  }
+}
+
+.appt-card {
+  &__empty {
+    align-items: center;
+    color: var(--ion-color-medium);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.875rem;
+    gap: 8px;
+    padding: 24px 0;
+
+    ion-icon {
+      font-size: 28px;
+    }
+  }
+
+  &__header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__icon {
+    color: var(--ion-color-medium);
+    font-size: 20px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__title {
+    color: var(--ion-text-color);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+}
+
+.appt-item {
+  &__badge {
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    white-space: nowrap;
+
+    &--cardiology {
+      --background: rgba(185, 28, 28, 0.1);
+      --color: var(--ion-color-danger);
+    }
+
+    &--dental {
+      --background: rgba(37, 99, 235, 0.1);
+      --color: #2563eb;
+    }
+
+    &--follow-up {
+      --background: rgba(var(--ion-color-warning-rgb), 0.1);
+      --color: var(--ion-color-warning);
+    }
+
+    &--general {
+      --background: rgba(var(--ion-color-success-rgb), 0.1);
+      --color: var(--ion-color-success);
+    }
+  }
+
+  &__date {
+    color: var(--ion-color-medium);
+    font-size: 0.8rem;
+  }
+
+  &__doctor {
+    color: var(--ion-color-primary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  &__title {
+    color: var(--ion-text-color);
+    font-size: 0.925rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.shimmer {
+  animation: shimmer 1.4s infinite;
+  background: linear-gradient(
+    90deg,
+    var(--ion-background-color) 25%,
+    var(--ion-border-color) 50%,
+    var(--ion-background-color) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  height: 13px;
+
+  &--medium {
+    width: 50%;
+  }
+
+  &--narrow {
+    width: 35%;
+  }
+
+  &--wide {
+    width: 70%;
+  }
+}
+
+.shimmer-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+  width: 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

@@ -1,0 +1,56 @@
+.edit-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+
+  &__error {
+    border-radius: 10px;
+    display: block;
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    white-space: normal;
+  }
+
+  &__item {
+    --background: var(--ion-card-background);
+    --border-radius: 10px;
+    --padding-bottom: 4px;
+    --padding-start: 16px;
+    --padding-top: 4px;
+    margin-bottom: 8px;
+  }
+
+  &__list {
+    background: transparent;
+    padding: 0;
+  }
+
+  &__save {
+    --border-radius: 12px;
+    margin-top: 8px;
+  }
+
+  &__success {
+    align-items: center;
+    border-radius: 10px;
+    display: flex;
+    font-size: 0.875rem;
+    gap: 8px;
+    padding: 10px 14px;
+    white-space: normal;
+  }
+}
+
+ion-breadcrumbs {
+  padding: 8px 16px;
+}
+
+ion-input,
+ion-select {
+  --highlight-color-focused: var(--ion-color-primary);
+}
+
+ion-toolbar {
+  --background: var(--ion-toolbar-background);
+}

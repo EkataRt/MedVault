@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <app-notification-bell />
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="dashboard">
+    <app-user-info-card [profile]="profile()" [isLoading]="isLoading()" />
+
+    <div class="dashboard__section">
+      <app-appointment-list />
+    </div>
+
+    <div class="dashboard__section">
+      <app-medicine-list />
+    </div>
+
+    <div class="dashboard__section">
+      <app-calendar mode="dashboard" />
+    </div>
+
+    <div class="dashboard__section">
+      <app-health-analytics />
+    </div>
+  </div>
+</ion-content>
