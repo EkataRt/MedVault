@@ -129,10 +129,17 @@ export class MedicineFormComponent {
   }
 
   protected submitMedicine(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorMessage = 'Please fill in all required fields.';
+      return;
+    }
+
     const userId = this.authService.getActiveUser()?.id;
-
-    if (!userId || this.isSubmitting || this.form.invalid) return;
-
+    if (!userId) {
+      this.errorMessage = 'You must be logged in to add a medicine.';
+      return;
+    }
     this.isSubmitting = true;
 
     const f = this.form.getRawValue();

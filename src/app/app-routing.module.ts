@@ -63,6 +63,7 @@ const routes: Routes = [
     canActivate: [() => smartRedirect()],
     children: [],
   },
+
 ];
 
 @NgModule({

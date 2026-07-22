@@ -2,11 +2,16 @@
   <ion-toolbar>
     <ion-title slot="start">{{ title() }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button fill="clear"
+                  class="search-doctor-btn"
+                  (click)="onSearchDoctor()"
+                  aria-label="Search doctor">
+        <ion-icon name="search-outline" slot="start" />
+        Search Doctor
+      </ion-button>
       <app-notification-bell />
-      <ion-button
-        routerLink="/main/settings"
-        routerLinkActive="settings-active"
-      >
+      <ion-button routerLink="/main/settings"
+                  routerLinkActive="settings-active">
         <ion-icon name="settings-outline" slot="icon-only" />
       </ion-button>
     </ion-buttons>

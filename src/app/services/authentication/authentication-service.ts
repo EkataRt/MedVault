@@ -82,18 +82,17 @@ export class AuthenticationService {
 
   public login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http
-      .get<
-        User[]
-      >(`${this.apiUrl}/users?username=${credentials.username}&password=${credentials.password}`)
+      .post<{ id: string; username: string; email: string; token: string }>(
+        `${this.apiUrl}/users/login`,   // ← new dedicated endpoint
+        credentials,                    // ← goes in request BODY, not URL
+      )
       .pipe(
-        map((users) => {
-          if (!users.length) {
-            throw new Error('Invalid username or password');
-          }
+        map((response) => {
+          const { token, ...user } = response;
 
-          const user = users[0];
-          const token = `token-${user.id}-${Date.now()}`;
+          // Single source of truth — store everything here, not in the component
           this.storage.set(this.userKey, JSON.stringify(user));
+          this.storage.set('token', token);
 
           return { token, user };
         }),

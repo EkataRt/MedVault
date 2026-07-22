@@ -1,0 +1,241 @@
+// search-doctors.page.scss
+
+:host {
+  --bg-surface: #1c1c1e;
+  --bg-elevated: #242426;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text-primary: #f2f0ed;
+  --text-muted: #9a9591;
+  --accent: #c17a5d;
+  --accent-soft: rgba(193, 122, 93, 0.14);
+  --success: #4caf82;
+}
+
+ion-content {
+  --background: #141415;
+}
+
+.filters {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+ion-input,
+ion-select {
+  --background: var(--bg-elevated);
+  --color: var(--text-primary);
+  --placeholder-color: var(--text-muted);
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+ion-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+// Segmented toggle (hospital type)
+.segment-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.segment-btn {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+
+  &.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  &:not(.active):hover {
+    color: var(--text-primary);
+  }
+}
+
+// Sort by nearest checkbox row
+.sort-item {
+  --background: transparent;
+  --border-color: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 40px;
+  margin-top: 4px;
+
+  ion-checkbox {
+    --size: 20px;
+    --checkbox-background-checked: var(--accent);
+    --border-color-checked: var(--accent);
+    margin-inline-end: 10px;
+  }
+
+  ion-label {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+ion-button {
+  --border-radius: 10px;
+  --background: var(--accent);
+  --background-activated: var(--accent);
+  --box-shadow: none;
+  font-weight: 600;
+  margin-top: 20px;
+  height: 46px;
+}
+
+// Results
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.no-results {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 32px 0;
+}
+
+.doctor-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.doctor-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.doctor-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.doctor-rating {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0b84c;
+}
+
+.doctor-specialty {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.doctor-hospital {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.hospital-type {
+  display: inline-block;
+  text-transform: capitalize;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  vertical-align: middle;
+}
+
+.doctor-location {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.location-group {
+  position: relative;
+}
+
+.location-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  max-height: 200px;
+  overflow-y: auto;
+
+  li {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text-primary);
+    border-radius: 7px;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+  }
+
+  .no-match {
+    color: var(--text-muted);
+    cursor: default;
+
+    &:hover {
+      background: transparent;
+      color: var(--text-muted);
+    }
+  }
+}

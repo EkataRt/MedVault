@@ -31,4 +31,8 @@ export class MainPage {
         this.title.set(matched?.title ?? 'Dashboard');
       });
   }
+
+  protected onSearchDoctor(): void {
+    this.router.navigate(['main/doctors/search-doctors']);
+  }
 }

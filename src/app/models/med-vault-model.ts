@@ -42,7 +42,15 @@ export interface Medicine {
   timesPerDay: number;
   userId: string;
 }
-
+export interface Doctor {
+  hospitalName: string;
+  hospitalType: 'private' | 'public';
+  id: string;
+  location: string;
+  name: string;
+  specialty: string;
+  isSort: boolean;
+}
 export interface MedVaultData {
   appointments: Appointment[];
   healthProfiles: HealthProfile[];

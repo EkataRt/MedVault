@@ -40,6 +40,13 @@ const routes: Routes = [
         path: 'medicines',
       },
       {
+  loadChildren: () =>
+    import('./doctors/search-doctors/search-doctors.module').then(
+      (m) => m.SearchDoctorsPageModule,
+    ),
+  path: 'doctors/search-doctors',
+},
+      {
         loadChildren: () =>
           import('./settings/settings.module').then((m) => m.SettingsModule),
         path: 'settings',

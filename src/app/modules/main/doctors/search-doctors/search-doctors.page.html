@@ -1,0 +1,98 @@
+<!-- search-doctors.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Search Doctor</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/main/dashboard" />
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (errorMessage()) {
+  <p class="error-text">{{ errorMessage() }}</p>
+  }
+
+  <div class="filters">
+    <div class="form-group">
+      <label class="field-label">HEALTH PROBLEM</label>
+      <ion-input placeholder="e.g. headache, tooth pain"
+                 [(ngModel)]="healthProblem" />
+    </div>
+
+    <div class="form-group">
+      <p class="field-label">HOSPITAL TYPE</p>
+      <div class="segment-toggle">
+        <button class="segment-btn"
+                [class.active]="hospitalType() === 'all'"
+                (click)="setHospitalType('all')">
+          All
+        </button>
+        <button class="segment-btn"
+                [class.active]="hospitalType() === 'private'"
+                (click)="setHospitalType('private')">
+          Private
+        </button>
+        <button class="segment-btn"
+                [class.active]="hospitalType() === 'public'"
+                (click)="setHospitalType('public')">
+          Public
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group location-group">
+      <label class="field-label">LOCATION</label>
+      <ion-input placeholder="Type a city, e.g. Kathmandu"
+                 [value]="locationQuery()"
+                 (ionInput)="onLocationInput($event.detail.value ?? '')"
+                 (ionFocus)="onLocationFocus()"
+                 (ionBlur)="onLocationBlur()" />
+
+      @if (showLocationSuggestions() && locationSuggestions().length > 0) {
+      <ul class="location-suggestions">
+        @for (loc of locationSuggestions(); track loc) {
+        <li (mousedown)="$event.preventDefault()" (click)="selectLocation(loc)">{{ loc }}</li>
+        }
+      </ul>
+      }
+
+      @if (showLocationSuggestions() && locationQuery().trim() && locationSuggestions().length === 0) {
+      <ul class="location-suggestions">
+        <li class="no-match">No matching location</li>
+      </ul>
+      }
+    </div>
+
+    <ion-item lines="none" class="sort-item">
+      <ion-checkbox slot="start" [checked]="isSort()" (ionChange)="toggleSort()" />
+      <ion-label>Sort by nearest</ion-label>
+    </ion-item>
+
+    <ion-button expand="block" (click)="onSearch()" [disabled]="isSearching()">
+      {{ isSearching() ? "Searching..." : "Search" }}
+    </ion-button>
+  </div>
+
+  <div class="results">
+    @if (hasSearched() && !isSearching() && doctors().length === 0) {
+    <p class="no-results">No doctors found matching your filters.</p>
+    }
+
+    @for (doc of doctors(); track doc.id) {
+    <div class="doctor-card">
+      <div class="doctor-card__header">
+        <span class="doctor-name">{{ doc.name }}</span>
+      </div>
+      <p class="doctor-specialty">{{ doc.specialty }}</p>
+      <p class="doctor-hospital">
+        {{ doc.hospitalName }} ·
+        <span class="hospital-type">{{ doc.hospitalType }}</span>
+      </p>
+      <p class="doctor-location">
+        {{ doc.location }}
+      </p>
+    </div>
+    }
+  </div>
+</ion-content>
