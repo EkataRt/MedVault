@@ -21,11 +21,11 @@ namespace MedVaultAPI.Services
             "Psychiatrist", "Pediatrician", "Gynecology", "Pulmonologist"
         };
 
-        public AIQueryService(HttpClient httpClient)
+        public AIQueryService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
 
-            var apiKey = "key";
+            var apiKey = configuration["GoogleAI:ApiKey"];
             if (string.IsNullOrEmpty(apiKey))
             {
                 throw new InvalidOperationException("Google AI API key not configured.");
