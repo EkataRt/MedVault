@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 import { forkJoin } from 'rxjs';
 import { HealthProfile } from '../../../../../models/med-vault-model';
 import { AuthenticationService } from '../../../../../services/authentication/authentication-service';
@@ -19,6 +20,7 @@ export class EditProfileComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly healthProfileService = inject(HealthProfileService);
   private readonly router = inject(Router);
+  private readonly toastController = inject(ToastController);
 
   protected form!: FormGroup;
   protected errorMessage = signal<string | null>(null);
@@ -96,13 +98,13 @@ export class EditProfileComponent implements OnInit {
 
     const profileRequest$ = this.healthProfile?.id
       ? this.healthProfileService.updateProfile(
-          String(this.healthProfile.id),
-          healthProfileData,
-        )
+        String(this.healthProfile.id),
+        healthProfileData,
+      )
       : this.healthProfileService.createProfile({
-          ...(healthProfileData as Omit<HealthProfile, 'id'>),
-          userId: String(user.id),
-        });
+        ...(healthProfileData as Omit<HealthProfile, 'id'>),
+        userId: String(user.id),
+      });
 
     const userData = { username: this.form.value.fullName };
 
@@ -119,8 +121,20 @@ export class EditProfileComponent implements OnInit {
         this.isSaved.set(true);
         this.isSaving.set(false);
         this.dataRefreshService.emitProfileChanged();
+        this.presentSavedToast();
         setTimeout(() => this.isSaved.set(false), 3000);
       },
     });
+  }
+
+  private async presentSavedToast(): Promise<void> {
+    const toast = await this.toastController.create({
+      color: 'success',
+      duration: 2000,
+      icon: 'checkmark-circle-outline',
+      message: 'Saved successfully.',
+      position: 'top',
+    });
+    await toast.present();
   }
 }
