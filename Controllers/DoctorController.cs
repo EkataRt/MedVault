@@ -57,13 +57,11 @@ namespace MedVaultAPI.Controllers
             }
             var candidates = await query.ToListAsync();
 
-            // 4. Resolve coordinates for every distinct doctor location in one query
             var locationNames = candidates.Select(d => d.Location).Distinct().ToList();
             var places = await _db.Place
                 .Where(p => locationNames.Contains(p.Name))
                 .ToDictionaryAsync(p => p.Name, p => p);
 
-            // 5. Filter to doctors within 5 miles, keeping the computed distance for sorting
             var withinRadius = candidates
                 .Select(d => new
                 {

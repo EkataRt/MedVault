@@ -15,6 +15,7 @@ namespace MedVaultAPI.Models
         public string EndDate { get; set; } = string.Empty;
         public string MealPreference { get; set; } = string.Empty; // 'before' | 'after' | 'any'
         public int TimesPerDay { get; set; }
+        public string? ActiveIngredient { get; set; } 
 
         // Arrays — stored as JSON in DB
         [NotMapped]

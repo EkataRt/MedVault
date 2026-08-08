@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MedVaultAPI.Model;
 using MedVaultAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedVaultAPI.Data
 {
@@ -14,7 +15,10 @@ namespace MedVaultAPI.Data
         public DbSet<Medicine> Medicines { get; set; }
         public DbSet<Place> Place { get; set; }
         public DbSet<Doctor> Doctor { get; set; }
+        public DbSet<MedicineNotification> MedicineNotification { get; set; }
 
+        public DbSet<MedDocument> MedDocument { get; set; }
+        public DbSet<Folder> Folder { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MedVaultAPI.Data;
 using MedVaultAPI.Models;
+using MedVaultAPI.Services;
 using System.Text.Json;
 
 namespace MedVaultAPI.Controllers
@@ -11,10 +12,12 @@ namespace MedVaultAPI.Controllers
     public class MedicinesController : ControllerBase
     {
         private readonly MedVaultDbContext _db;
+        private readonly SchedulingConflictService _conflictService;
 
-        public MedicinesController(MedVaultDbContext db)
+        public MedicinesController(MedVaultDbContext db, SchedulingConflictService conflictService)
         {
             _db = db;
+            _conflictService = conflictService;
         }
 
         private static Medicine MapToResponse(Medicine medicine)
@@ -24,7 +27,6 @@ namespace MedVaultAPI.Controllers
             return medicine;
         }
 
-        // GET /medicines?userId=x
         [HttpGet]
         public async Task<IActionResult> GetMedicines([FromQuery] string? userId)
         {
@@ -45,27 +47,67 @@ namespace MedVaultAPI.Controllers
             return Ok(MapToResponse(medicine));
         }
 
-        // POST /medicines
         [HttpPost]
         public async Task<IActionResult> CreateMedicine([FromBody] Medicine medicine)
         {
+            var userMedicines = await _db.Medicines
+                .Where(m => m.UserId == medicine.UserId)
+                .ToListAsync();
+
+            if (_conflictService.HasMedicineConflict(medicine, userMedicines))
+            {
+                return Conflict(new { message = "Medication schedule conflicts or is too close to an existing medicine time." });
+            }
+
             medicine.Id = Guid.NewGuid().ToString();
             medicine.CreatedAt = DateTime.UtcNow;
+
             medicine.TimesJson = JsonSerializer.Serialize(medicine.Times);
             medicine.LastTakenDatesJson = JsonSerializer.Serialize(medicine.LastTakenDates);
 
             _db.Medicines.Add(medicine);
             await _db.SaveChangesAsync();
 
+            var notification = new MedicineNotification
+            {
+                Id = $"notif-{Guid.NewGuid()}",
+                UserId = medicine.UserId,
+                Title = "Medicine Added",
+                Body = $"Your medicine {medicine.Name} has been scheduled.",
+                Type = "medicine",
+                ReferenceId = medicine.Id,
+                DoseIndex = null,
+                Read = false,
+                CreatedAt = DateTime.UtcNow.ToString("O")
+            };
+
+            _db.MedicineNotification.Add(notification);
+            await _db.SaveChangesAsync();
+
             return Ok(MapToResponse(medicine));
         }
 
-        // PATCH /medicines/{id}
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateMedicine(string id, [FromBody] Medicine updated)
         {
             var medicine = await _db.Medicines.FindAsync(id);
             if (medicine == null) return NotFound();
+
+            var testMedicine = new Medicine
+            {
+                Id = medicine.Id,
+                UserId = medicine.UserId,
+                Times = updated.Times ?? JsonSerializer.Deserialize<List<string>>(medicine.TimesJson ?? "[]")
+            };
+
+            var userMedicines = await _db.Medicines
+                .Where(m => m.UserId == medicine.UserId)
+                .ToListAsync();
+
+            if (_conflictService.HasMedicineConflict(testMedicine, userMedicines))
+            {
+                return Conflict(new { message = "Updated medicine schedule conflicts with another dose time." });
+            }
 
             if (!string.IsNullOrEmpty(updated.Name)) medicine.Name = updated.Name;
             if (!string.IsNullOrEmpty(updated.Condition)) medicine.Condition = updated.Condition;
@@ -84,7 +126,6 @@ namespace MedVaultAPI.Controllers
             return Ok(MapToResponse(medicine));
         }
 
-        // DELETE /medicines/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMedicine(string id)
         {

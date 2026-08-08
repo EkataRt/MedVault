@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -20,6 +21,11 @@ namespace MedVaultAPI.Services
             "Orthopedics", "Dentist", "Gastroenterologist", "Ophthalmologist",
             "Psychiatrist", "Pediatrician", "Gynecology", "Pulmonologist"
         };
+
+        // Default match score used when the AI call fails or a specialty is
+        // missing from the model's response. Kept low-ish so a failed AI call
+        // doesn't accidentally dominate the weighted score.
+        private const double DefaultSpecialtyMatchScore = 40.0;
 
         public AIQueryService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -174,6 +180,133 @@ namespace MedVaultAPI.Services
             }
 
             return "General Physician";
+        }
+
+        /// <summary>
+        /// Asks Gemini to score how well EVERY allowed specialty matches the given
+        /// health problem description, on a 0-100 scale. This backs the
+        /// "Specialty Match" (40%) factor of the weighted recommendation score,
+        /// so every candidate doctor's specialty can be scored with a single AI
+        /// call instead of one call per doctor.
+        /// </summary>
+        /// <param name="healthProblem">Free-text symptom / health problem from the user.</param>
+        /// <returns>
+        /// Dictionary keyed by specialty name (matching <see cref="AllowedSpecialties"/>)
+        /// with a 0-100 match score as the value. Never null - falls back to a
+        /// uniform default score for every specialty if the AI call fails.
+        /// </returns>
+        public async Task<Dictionary<string, double>> GetSpecialtyMatchScoresAsync(string healthProblem)
+        {
+            // No health problem supplied -> no preference, treat every specialty equally.
+            if (string.IsNullOrWhiteSpace(healthProblem))
+            {
+                return AllowedSpecialties.ToDictionary(s => s, s => 100.0);
+            }
+
+            var specialtyList = string.Join(", ", AllowedSpecialties);
+
+            var requestBody = new
+            {
+                system_instruction = new
+                {
+                    parts = new[]
+                    {
+                        new
+                        {
+                            text = $@"You are a symptom-to-specialty relevance scorer for a healthcare app.
+                                Given a brief description of a health problem, score how relevant EACH of the
+                                following medical specialties is for treating that problem, on a scale of 0 to 100
+                                (100 = perfect match, 0 = completely irrelevant): [{specialtyList}].
+
+                                Respond with ONLY a raw JSON object (no markdown, no code fences, no explanation)
+                                mapping every specialty name exactly as given to an integer score, e.g.:
+                                {{""General Physician"": 40, ""Cardiologist"": 95, ...}}
+
+                                Every specialty in the list MUST appear as a key exactly once."
+                        }
+                    }
+                },
+                contents = new[]
+                {
+                    new { parts = new[] { new { text = healthProblem } } }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.0,
+                    responseMimeType = "application/json"
+                }
+            };
+
+            var fallback = AllowedSpecialties.ToDictionary(s => s, s => DefaultSpecialtyMatchScore);
+
+            var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.PostAsync($"{_url}?key={_apiKey}", content);
+            }
+            catch
+            {
+                return fallback;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return fallback;
+            }
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            try
+            {
+                using var doc = JsonDocument.Parse(jsonResponse);
+                var root = doc.RootElement;
+
+                if (!root.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
+                {
+                    return fallback;
+                }
+
+                var text = candidates[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return fallback;
+                }
+
+                // Gemini occasionally wraps JSON in ```json fences even when asked not to; strip them defensively.
+                text = text.Trim().Trim('`');
+                if (text.StartsWith("json", StringComparison.OrdinalIgnoreCase))
+                {
+                    text = text.Substring(4).Trim();
+                }
+
+                using var scoresDoc = JsonDocument.Parse(text);
+                var result = new Dictionary<string, double>();
+
+                foreach (var specialty in AllowedSpecialties)
+                {
+                    if (scoresDoc.RootElement.TryGetProperty(specialty, out var scoreEl) &&
+                        scoreEl.TryGetDouble(out var score))
+                    {
+                        result[specialty] = Math.Clamp(score, 0.0, 100.0);
+                    }
+                    else
+                    {
+                        result[specialty] = DefaultSpecialtyMatchScore;
+                    }
+                }
+
+                return result;
+            }
+            catch
+            {
+                return fallback;
+            }
         }
     }
 }

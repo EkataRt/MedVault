@@ -72,6 +72,21 @@ namespace MedVaultAPI.Controllers
 
             await _db.SaveChangesAsync();
             return Ok(appointment);
+            var notification = new MedicineNotification
+            {
+                Id = $"notif-{Guid.NewGuid()}",
+                UserId = appointment.UserId,
+                Title = "Medicine Added",
+                Body = $"Your medicine {appointment.Title} has been scheduled.",
+                Type = "medicine",
+                ReferenceId = appointment.Id,
+                DoseIndex = null,
+                Read = false,
+                CreatedAt = DateTime.UtcNow.ToString("O")
+            };
+
+            _db.MedicineNotification.Add(notification);
+            await _db.SaveChangesAsync();
         }
 
         // DELETE /appointments/{id}
