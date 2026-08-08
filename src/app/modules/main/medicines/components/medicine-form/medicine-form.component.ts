@@ -177,11 +177,13 @@ export class MedicineFormComponent {
       : this.medicineService.create(payload);
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      error: () => {
-        this.errorMessage = 'Failed to submit medicine.';
+      error: (err) => {
+        // Extract custom error message from backend (e.g., 409 Conflict) or fallback
+        this.errorMessage = err.error?.message || 'Failed to submit medicine.';
         this.isSubmitting = false;
       },
       next: (result) => {
+        this.errorMessage = null; // Clear any old errors
         this.formSubmitted.emit(result);
         this.isSubmitting = false;
         this.onDismiss();

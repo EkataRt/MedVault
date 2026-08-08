@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { from } from 'rxjs';
+
 import { Notification } from '../../../models/med-vault-model';
 import { AuthenticationService } from '../../../services/authentication/authentication-service';
 import { NotificationService } from '../../service/notification/notification-service';
@@ -13,92 +14,208 @@ import { NotificationService } from '../../service/notification/notification-ser
   styleUrls: ['./notification-bell.component.scss'],
 })
 export class NotificationBellComponent implements OnInit {
+
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthenticationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  public readonly notifications = signal<Notification[]>([]);
-  public readonly isOpen = signal<boolean>(false);
-  public readonly isLoading = signal<boolean>(false);
 
-  public readonly unreadCount = (): number =>
-    this.notifications().filter((n) => !n.read).length;
+  public readonly notifications = signal<Notification[]>([]);
+  public readonly isOpen = signal(false);
+  public readonly isLoading = signal(false);
+
+
+  public unreadCount(): number {
+    return this.notifications()
+      .filter(notification => !notification.read)
+      .length;
+  }
+
 
   ngOnInit(): void {
     this.loadNotifications();
 
     this.notificationService.newNotification$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.loadNotifications());
+      .subscribe(() => {
+        this.loadNotifications();
+      });
   }
 
+
   public loadNotifications(): void {
+
     const userId = this.authService.getActiveUser()?.id;
-    if (!userId) return;
+
+    if (!userId) {
+      console.log("No logged-in user");
+      return;
+    }
+
 
     this.isLoading.set(true);
+
 
     from(this.notificationService.getInAppNotifications(userId))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        error: () => this.isLoading.set(false),
-        next: (data) => {
-          this.notifications.set(data);
+
+        next: (notifications) => {
+
+          // newest notification first
+          const sorted = notifications.sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() -
+              new Date(a.createdAt).getTime()
+          );
+
+
+          this.notifications.set(sorted);
+
           this.isLoading.set(false);
         },
+
+
+        error: (err) => {
+          console.error(
+            "Failed loading notifications",
+            err
+          );
+
+          this.isLoading.set(false);
+        }
+
       });
   }
 
+
+
   public openPopover(event: Event): void {
+
     event.stopPropagation();
+
     this.isOpen.set(true);
 
+
     const userId = this.authService.getActiveUser()?.id;
-    if (userId && this.unreadCount() > 0) {
+
+
+    if (
+      userId &&
+      this.unreadCount() > 0
+    ) {
+
       from(this.notificationService.markAllAsRead(userId))
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
+
           next: () => {
-            this.notifications.update((list) =>
-              list.map((n) => ({ ...n, read: true })),
+
+            this.notifications.update(
+              list =>
+                list.map(notification => ({
+                  ...notification,
+                  read: true
+                }))
             );
-          },
+
+          }
+
         });
+
     }
+
   }
+
+
 
   public closePopover(): void {
     this.isOpen.set(false);
   }
 
+
+
+
   public navigateTo(notification: Notification): void {
+
     this.closePopover();
 
-    if (notification.type === 'medicine') {
-      this.router.navigate(['/main/medicines']);
-    } else {
-      this.router.navigate(['/main/appointments']);
+
+    if (notification.type === "medicine") {
+
+      this.router.navigate([
+        "/main/medicines"
+      ]);
+
     }
+    else {
+
+      this.router.navigate([
+        "/main/appointments"
+      ]);
+
+    }
+
   }
 
-  public formatRelativeTime(isoString: string): string {
+
+
+
+
+  public formatRelativeTime(
+    isoString: string
+  ): string {
+
     const now = new Date();
     const date = new Date(isoString);
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
 
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffMs =
+      now.getTime() -
+      date.getTime();
 
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+
+    const diffMinutes =
+      Math.floor(diffMs / 60000);
+
+
+
+    if (diffMinutes < 1)
+      return "Just now";
+
+
+    if (diffMinutes < 60)
+      return `${diffMinutes}m ago`;
+
+
+
+    const hours =
+      Math.floor(diffMinutes / 60);
+
+
+    if (hours < 24)
+      return `${hours}h ago`;
+
+
+
+    const days =
+      Math.floor(hours / 24);
+
+
+    return `${days}d ago`;
   }
 
-  public trackById(_index: number, item: Notification): string {
+
+
+
+  public trackById(
+    _index: number,
+    item: Notification
+  ): string {
+
     return item.id;
+
   }
+
 }

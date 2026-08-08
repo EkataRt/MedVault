@@ -1,80 +1,188 @@
 <div class="bell-wrapper">
-  <ion-button
-    class="bell-btn"
-    fill="clear"
-    (click)="openPopover($event)"
-    aria-label="Notifications"
-  >
-    <ion-icon name="notifications-outline" slot="icon-only" />
+
+  <ion-button class="bell-btn"
+              fill="clear"
+              (click)="openPopover($event)"
+              aria-label="Notifications">
+    <ion-icon name="notifications-outline"
+              slot="icon-only" />
+
     @if (unreadCount() > 0) {
-      <span class="badge">{{ unreadCount() > 9 ? "9+" : unreadCount() }}</span>
+    <span class="badge">
+      {{ unreadCount() > 9 ? "9+" : unreadCount() }}
+    </span>
     }
+
   </ion-button>
+
 </div>
 
-<ion-popover
-  [isOpen]="isOpen()"
-  [showBackdrop]="true"
-  [backdropDismiss]="true"
-  (didDismiss)="closePopover()"
-  class="notification-popover"
->
+
+
+<ion-popover [isOpen]="isOpen()"
+             [showBackdrop]="true"
+             [backdropDismiss]="true"
+             (didDismiss)="closePopover()"
+             class="notification-popover">
+
   <ng-template>
+
     <div class="popover-content">
+
+
+      <!-- Header -->
       <div class="popover-header">
-        <h3 class="popover-title">Notifications</h3>
-        @if (unreadCount() === 0 && notifications().length > 0) {
-          <span class="all-read-label">All caught up</span>
+
+        <h3 class="popover-title">
+          Notifications
+        </h3>
+
+
+        @if (notifications().length > 0 && unreadCount() === 0) {
+
+        <span class="all-read-label">
+          All caught up
+        </span>
+
         }
+
       </div>
 
+
+
+
+      <!-- Loading -->
       @if (isLoading()) {
-        <div class="loading-state">
-          <ion-spinner name="crescent" />
-        </div>
-      } @else if (notifications().length === 0) {
-        <div class="empty-state">
-          <ion-icon name="notifications-off-outline" />
-          <p>No notifications yet</p>
-        </div>
-      } @else {
-        <ion-list lines="none" class="notification-list">
-          @for (notif of notifications(); track trackById($index, notif)) {
-            <ion-item
-              class="notification-item"
-              [class.unread]="!notif?.read"
-              button
-              detail="false"
-              (click)="navigateTo(notif)"
-            >
-              <div class="notif-icon-wrap" slot="start">
-                <ion-icon
-                  [name]="
-                    notif?.type === 'medicine'
+
+      <div class="loading-state">
+
+        <ion-spinner name="crescent" />
+
+      </div>
+
+      }
+
+
+
+      <!-- Empty -->
+      @else if (notifications().length === 0) {
+
+      <div class="empty-state">
+
+        <ion-icon name="notifications-off-outline" />
+
+        <p>
+          No notifications yet
+        </p>
+
+      </div>
+
+      }
+
+
+
+      <!-- Notification list -->
+      @else {
+
+      <ion-list lines="none"
+                class="notification-list">
+
+
+        @for (
+        notif of notifications();
+        track notif.id
+        ) {
+
+
+        <ion-item class="notification-item"
+                  [class.unread]="!notif.read"
+                  button
+                  detail="false"
+                  (click)="navigateTo(notif)">
+
+
+
+          <!-- Icon -->
+          <div class="notif-icon-wrap"
+               slot="start">
+
+            <ion-icon [name]="
+                    notif.type === 'medicine'
                       ? 'medkit-outline'
                       : 'calendar-outline'
                   "
-                  class="notif-icon"
-                  [class.medicine]="notif?.type === 'medicine'"
-                  [class.appointment]="notif?.type === 'appointment'"
-                />
-              </div>
+                      class="notif-icon"
+                      [class.medicine]="
+                    notif.type === 'medicine'
+                  "
+                      [class.appointment]="
+                    notif.type === 'appointment'
+                  " />
 
-              <div class="notif-body">
-                <p class="notif-title">{{ notif?.title }}</p>
-                <p class="notif-text">{{ notif?.body }}</p>
-                <span class="notif-time">{{
-                  formatRelativeTime(notif?.createdAt ?? "")
-                }}</span>
-              </div>
+          </div>
 
-              @if (!notif?.read) {
-                <div class="unread-dot" slot="end"></div>
-              }
-            </ion-item>
+
+
+
+
+          <!-- Text -->
+          <div class="notif-body">
+
+
+            <p class="notif-title">
+
+              {{ notif.title }}
+
+            </p>
+
+
+
+            <p class="notif-text">
+
+              {{ notif.body }}
+
+            </p>
+
+
+
+            <span class="notif-time">
+
+              {{ formatRelativeTime(notif.createdAt) }}
+
+            </span>
+
+
+          </div>
+
+
+
+
+
+          <!-- Unread indicator -->
+          @if (!notif.read) {
+
+          <div class="unread-dot"
+               slot="end"></div>
+
           }
-        </ion-list>
+
+
+        </ion-item>
+
+
+        }
+
+
+      </ion-list>
+
+
       }
+
+
     </div>
+
+
   </ng-template>
+
+
 </ion-popover>

@@ -38,13 +38,9 @@ export class MedicineService {
   }
 
   public getAllByUserId(userId: string): Observable<Medicine[]> {
-    return this.http
-      .get<Medicine[]>(this.apiUrl)
-      .pipe(
-        map((medicines) =>
-          medicines.filter((m) => String(m.userId) === String(userId)),
-        ),
-      );
+    return this.http.get<Medicine[]>(
+      `${this.apiUrl}?userId=${encodeURIComponent(userId)}`
+    );
   }
 
   public getById(id: string): Observable<Medicine> {

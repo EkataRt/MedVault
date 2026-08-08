@@ -1,5 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http'; import { Injectable, signal } from '@angular/core';
 import { forkJoin, Observable, switchMap, tap } from 'rxjs';
 import { Folder, MedDocument } from '../../models/med-vault-model';
 import { environment } from '../../../environments/environment';
@@ -61,7 +60,7 @@ export class DocumentVaultService {
     const form = new FormData();
     form.append('file', file);
     return this.http.post<{ fileName: string; url: string }>(
-      `${this.base}/upload`,
+      `${this.base}/documents/upload`,
       form,
     );
   }
@@ -104,10 +103,25 @@ export class DocumentVaultService {
         ),
       );
   }
+  public searchDocuments(
+    userId: string,
+    query: string
+  ): Observable<MedDocument[]> {
 
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('query', query);
+
+    return this.http.get<MedDocument[]>(
+      `${this.base}/documents/search`,
+      { params }
+    );
+  }
+  
   public deleteDocument(id: string, fileName: string): Observable<unknown> {
     return this.http.delete(`${this.base}/documents/${id}`).pipe(
-      switchMap(() => this.http.delete(`${this.base}/upload/${fileName}`)),
+      // Updated route: matches /documents/upload/{fileName}
+      switchMap(() => this.http.delete(`${this.base}/documents/upload/${fileName}`)),
       tap(() =>
         this.documents.update((docs) => docs.filter((d) => d.id !== id)),
       ),

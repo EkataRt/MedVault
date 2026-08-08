@@ -10,9 +10,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Preferences } from '@capacitor/preferences';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Folder, MedDocument } from '../../../models/med-vault-model';
 import { AuthenticationService } from '../../../services/authentication/authentication-service';
 import { DocumentVaultService } from '../../../services/document-vault/document-vault-service';
+import { environment } from '../../../../environments/environment';
 
 type ViewState = 'root' | 'folder' | 'subfolder';
 
@@ -35,6 +38,7 @@ export class DocumentVaultPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   private userId = '';
+  private readonly searchSubject = new Subject<string>();
 
   public readonly view = signal<ViewState>('root');
   public readonly activeFolderId = signal<string | null>(null);
@@ -48,6 +52,11 @@ export class DocumentVaultPage implements OnInit {
   public readonly errorMessage = signal<string | null>(null);
   public readonly cameraFile = signal<File | null>(null);
 
+  // Search state signals
+  public readonly searchQuery = signal<string>('');
+  public readonly searchResults = signal<MedDocument[]>([]);
+  public readonly isSearching = computed(() => this.searchQuery().trim().length > 0);
+
   ngOnInit(): void {
     const user = this.authService.getActiveUser();
     if (!user?.id) return;
@@ -58,8 +67,48 @@ export class DocumentVaultPage implements OnInit {
       .loadAll(this.userId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.processPendingPhoto());
+
+    // Setup debounced search subscription
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => {
+          if (!query.trim()) {
+            return [];
+          }
+          return this.vaultService.searchDocuments(this.userId, query);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (results) => this.searchResults.set(results),
+        error: () => this.errorMessage.set('Search failed. Please try again.'),
+      });
   }
 
+  // --- Search Handler ---
+  public onSearch(event: any): void {
+    const query = event.detail.value ?? '';
+    this.searchQuery.set(query);
+    this.searchSubject.next(query);
+  }
+
+  public clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+  }
+
+  // --- Upload Handler ---
+  public onDocumentUploaded(): void {
+    this.closeUploadModal();
+    // Reload documents list from service to keep data synchronized
+    if (this.userId) {
+      this.vaultService.loadAll(this.userId).subscribe();
+    }
+  }
+
+  // --- Signals & Computed Properties ---
   public readonly rootFolders = computed(() =>
     this.vaultService.folders().filter((f) => f.parentId === null),
   );
@@ -376,5 +425,12 @@ export class DocumentVaultPage implements OnInit {
       Preferences.remove({ key: 'pending_view' }),
       Preferences.remove({ key: 'pending_folder_name' }),
     ]);
+  }
+
+  public viewDocument(doc: MedDocument): void {
+    const apiOrigin = new URL(environment.apiUrl).origin;
+    const fullUrl = `${apiOrigin}${doc.url}`;
+
+    window.open(fullUrl, '_blank');
   }
 }

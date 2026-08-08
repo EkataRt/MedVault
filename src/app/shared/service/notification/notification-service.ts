@@ -27,7 +27,114 @@ export class NotificationService {
 
   public readonly newNotification$ = this._newNotification$.asObservable();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
+  public async checkDueNotifications(userId: string): Promise<void> {
+    const [medicines, appointments, existing] = await Promise.all([
+      firstValueFrom(this.http.get<Medicine[]>(`${this.apiUrl}/medicines`)),
+      firstValueFrom(this.http.get<Appointment[]>(`${this.apiUrl}/appointments`)),
+      firstValueFrom(this.http.get<Notification[]>(`${this.apiUrl}/notifications`)),
+    ]);
+
+    const userMedicines = medicines.filter((m) => String(m.userId) === String(userId));
+    const userAppointments = appointments.filter((a) => String(a.userId) === String(userId));
+    const userExisting = existing.filter((n) => String(n.userId) === String(userId));
+
+    const now = new Date();
+    const todayStr = dayjs().format('YYYY-MM-DD');
+    let created = false;
+
+    // --- Medicine doses due today ---
+    for (const medicine of userMedicines) {
+      if (medicine.startDate > todayStr || medicine.endDate < todayStr) continue;
+
+      for (const [doseIndex, time] of medicine.times.entries()) {
+        const [hours, minutes] = time.split(':').map(Number);
+        const doseTime = dayjs().hour(hours).minute(minutes).second(0).toDate();
+
+        if (doseTime > now) continue; // not due yet
+
+        const alreadyNotified = userExisting.some(
+          (n) =>
+            n.type === 'medicine' &&
+            n.referenceId === medicine.id &&
+            n.doseIndex === doseIndex &&
+            dayjs(n.createdAt).format('YYYY-MM-DD') === todayStr,
+        );
+        if (alreadyNotified) continue;
+
+        const doseLabel = `Dose ${doseIndex + 1} of ${medicine.times.length}`;
+        const mealText =
+          medicine.mealPreference === 'before'
+            ? 'Before meal'
+            : medicine.mealPreference === 'after'
+              ? 'After meal'
+              : 'Any time';
+
+        await this.saveInAppNotification({
+          body: `${doseLabel} · ${mealText}`,
+          createdAt: new Date().toISOString(),
+          doseIndex,
+          read: false,
+          referenceId: medicine.id,
+          title: `Time to take your ${medicine.name} (${medicine.dosage})`,
+          type: 'medicine',
+          userId,
+        });
+        created = true;
+      }
+    }
+
+    // --- Appointment reminders ---
+    for (const appointment of userAppointments) {
+      if (appointment.visited) continue;
+
+      const appointmentDateTime = this.parseAppointmentDateTime(appointment.date, appointment.time);
+      if (!appointmentDateTime || appointmentDateTime <= now) continue;
+
+      const label = appointment.isFollowUp ? `${appointment.title} follow-up` : appointment.title;
+      const twoDaysBefore = new Date(appointmentDateTime.getTime() - 48 * 60 * 60 * 1000);
+      const threeHoursBefore = new Date(appointmentDateTime.getTime() - 3 * 60 * 60 * 1000);
+
+      if (twoDaysBefore <= now) {
+        const already = userExisting.some(
+          (n) => n.type === 'appointment' && n.referenceId === appointment.id && n.title.includes('Upcoming'),
+        );
+        if (!already) {
+          await this.saveInAppNotification({
+            body: `Your ${label} is in 2 days.`,
+            createdAt: new Date().toISOString(),
+            read: false,
+            referenceId: appointment.id,
+            title: appointment.isFollowUp ? 'Upcoming Follow-up' : 'Upcoming Appointment',
+            type: 'appointment',
+            userId,
+          });
+          created = true;
+        }
+      }
+
+      if (threeHoursBefore <= now) {
+        const already = userExisting.some(
+          (n) => n.type === 'appointment' && n.referenceId === appointment.id && n.title.includes('Today'),
+        );
+        if (!already) {
+          const timeStr = dayjs(appointmentDateTime).format('h:mm A');
+          await this.saveInAppNotification({
+            body: `Your ${label} is today at ${timeStr}.`,
+            createdAt: new Date().toISOString(),
+            read: false,
+            referenceId: appointment.id,
+            title: appointment.isFollowUp ? 'Follow-up Today' : 'Appointment Today',
+            type: 'appointment',
+            userId,
+          });
+          created = true;
+        }
+      }
+    }
+
+    if (created) this._newNotification$.next();
+  }
 
   public async requestPermission(): Promise<void> {
     const { display } = await LocalNotifications.requestPermissions();
@@ -136,17 +243,11 @@ export class NotificationService {
   }
 
   public async getInAppNotifications(userId: string): Promise<Notification[]> {
-    const all = await firstValueFrom(
-      this.http.get<Notification[]>(`${this.apiUrl}/notifications`),
-    );
-
-    return all
-      .filter((n) => String(n.userId) === String(userId))
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    return await firstValueFrom(
+      this.http.get<Notification[]>(
+        `${this.apiUrl}/notifications/in-app/${userId}`
       )
-      .slice(0, this.maxInApp);
+    );
   }
 
   public async saveInAppNotification(
@@ -174,17 +275,11 @@ export class NotificationService {
   }
 
   public async markAllAsRead(userId: string): Promise<void> {
-    const notifications = await this.getInAppNotifications(userId);
-    const unread = notifications.filter((n) => !n.read);
-
-    await Promise.all(
-      unread.map((n) =>
-        firstValueFrom(
-          this.http.patch(`${this.apiUrl}/notifications/${n.id}`, {
-            read: true,
-          }),
-        ),
-      ),
+    await firstValueFrom(
+      this.http.patch(
+        `${this.apiUrl}/notifications/read-all/${userId}`,
+        {}
+      )
     );
   }
 
