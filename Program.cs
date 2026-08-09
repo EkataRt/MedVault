@@ -1,5 +1,6 @@
 using MedVaultAPI.Data;
 using MedVaultAPI.Services;
+using MedVaultAPI.Services.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -27,6 +28,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient<AIQueryService>();
 builder.Services.AddScoped<SchedulingConflictService>();
+builder.Services.AddScoped<QueryParser>();
+builder.Services.AddScoped<TfIdfSearchEngine>();
+builder.Services.AddScoped<SmartSearchService>();
 var app = builder.Build();
 
 // Auto-create DB tables on startup
