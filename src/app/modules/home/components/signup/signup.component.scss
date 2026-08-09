@@ -26,6 +26,17 @@
   text-align: center;
 }
 
+.field-error {
+  color: var(--ion-color-danger);
+  font-size: 0.75rem;
+  margin: 4px 0 0;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .form-fields {
   display: flex;
   flex-direction: column;
@@ -44,6 +55,31 @@
   ion-icon {
     color: white;
     font-size: 32px;
+  }
+}
+
+.password-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+
+  .checklist-item {
+    align-items: center;
+    color: var(--ion-color-medium);
+    display: flex;
+    font-size: 0.75rem;
+    gap: 6px;
+    margin: 0;
+
+    &.valid {
+      color: var(--ion-color-success);
+    }
+
+    ion-icon {
+      flex-shrink: 0;
+      font-size: 14px;
+    }
   }
 }
 
@@ -76,4 +112,10 @@
     color: var(--ion-color-primary);
     font-weight: 600;
   }
+}
+
+.visibility-toggle {
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  font-size: 18px;
 }

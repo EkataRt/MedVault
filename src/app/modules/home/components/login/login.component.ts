@@ -15,12 +15,17 @@ export class LoginComponent {
   protected password = signal('');
   protected isLoading = signal(false);
   protected errorMessage = signal('');
+  protected showPassword = signal(false);
 
   constructor(
     private router: Router,
     private authService: AuthenticationService,
     private storageService: StorageService,
   ) {}
+
+  public togglePasswordVisibility(): void {
+    this.showPassword.update((value) => !value);
+  }
 
   public onLogin(): void {
     if (!this.username() || !this.password()) {

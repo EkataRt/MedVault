@@ -104,6 +104,14 @@ ion-textarea {
   --border-radius: 8px;
 }
 
+ion-input ion-icon[slot="start"] {
+  margin-inline-end: 12px;
+}
+
+ion-input ion-icon[slot="end"] {
+  margin-inline-start: 8px;
+}
+
 .ion-page {
   background: var(--ion-background-color);
 }

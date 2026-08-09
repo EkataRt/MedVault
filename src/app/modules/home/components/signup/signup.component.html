@@ -9,66 +9,125 @@
     </div>
 
     <div class="form-fields">
-      <ion-input
-        fill="outline"
-        label="Email"
-        labelPlacement="floating"
-        type="email"
-        [value]="email()"
-        (ionInput)="email.set($event.detail.value ?? '')"
-      >
-        <ion-icon name="mail-outline" slot="start" />
-      </ion-input>
+      <div class="field-group">
+        <ion-input
+          fill="outline"
+          label="Email"
+          labelPlacement="floating"
+          type="email"
+          [value]="email()"
+          (ionInput)="email.set($event.detail.value ?? '')"
+        >
+          <ion-icon name="mail-outline" slot="start" />
+        </ion-input>
+        @if (emailError()) {
+          <p class="field-error">{{ emailError() }}</p>
+        }
+      </div>
 
-      <ion-input
-        fill="outline"
-        label="Username"
-        labelPlacement="floating"
-        type="text"
-        [value]="username()"
-        (ionInput)="username.set($event.detail.value ?? '')"
-      >
-        <ion-icon name="person-outline" slot="start" />
-      </ion-input>
+      <div class="field-group">
+        <ion-input
+          fill="outline"
+          label="Username"
+          labelPlacement="floating"
+          type="text"
+          [value]="username()"
+          (ionInput)="username.set($event.detail.value ?? '')"
+        >
+          <ion-icon name="person-outline" slot="start" />
+        </ion-input>
+        @if (usernameError()) {
+          <p class="field-error">{{ usernameError() }}</p>
+        }
+      </div>
 
-      <ion-input
-        fill="outline"
-        label="Password"
-        labelPlacement="floating"
-        type="password"
-        [value]="password()"
-        (ionInput)="password.set($event.detail.value ?? '')"
-      >
-        <ion-icon name="lock-closed-outline" slot="start" />
-      </ion-input>
+      <div class="field-group">
+        <ion-input
+          fill="outline"
+          label="Password"
+          labelPlacement="floating"
+          [type]="showPassword() ? 'text' : 'password'"
+          [value]="password()"
+          (ionInput)="password.set($event.detail.value ?? '')"
+        >
+          <ion-icon name="lock-closed-outline" slot="start" />
+          <ion-icon
+            class="visibility-toggle"
+            [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+            slot="end"
+            (click)="togglePasswordVisibility()"
+          />
+        </ion-input>
+        @if (password()) {
+          <div class="password-checklist">
+            <p class="checklist-item" [class.valid]="hasMinLength()">
+              <ion-icon
+                [name]="hasMinLength() ? 'checkmark-circle' : 'ellipse-outline'"
+              />
+              At least 6 characters
+            </p>
+            <p class="checklist-item" [class.valid]="hasUppercase()">
+              <ion-icon
+                [name]="hasUppercase() ? 'checkmark-circle' : 'ellipse-outline'"
+              />
+              One uppercase letter
+            </p>
+            <p class="checklist-item" [class.valid]="hasNumber()">
+              <ion-icon
+                [name]="hasNumber() ? 'checkmark-circle' : 'ellipse-outline'"
+              />
+              One number
+            </p>
+            <p class="checklist-item" [class.valid]="hasSpecialChar()">
+              <ion-icon
+                [name]="
+                  hasSpecialChar() ? 'checkmark-circle' : 'ellipse-outline'
+                "
+              />
+              One special character
+            </p>
+          </div>
+        }
+      </div>
 
-      <ion-input
-        fill="outline"
-        label="Confirm Password"
-        labelPlacement="floating"
-        type="password"
-        [value]="confirmPassword()"
-        (ionInput)="confirmPassword.set($event.detail.value ?? '')"
-      >
-        <ion-icon name="lock-closed-outline" slot="start" />
-      </ion-input>
-    </div>
+      <div class="field-group">
+        <ion-input
+          fill="outline"
+          label="Confirm Password"
+          labelPlacement="floating"
+          [type]="showConfirmPassword() ? 'text' : 'password'"
+          [value]="confirmPassword()"
+          (ionInput)="confirmPassword.set($event.detail.value ?? '')"
+        >
+          <ion-icon name="lock-closed-outline" slot="start" />
+          <ion-icon
+            class="visibility-toggle"
+            [name]="showConfirmPassword() ? 'eye-off-outline' : 'eye-outline'"
+            slot="end"
+            (click)="toggleConfirmPasswordVisibility()"
+          />
+        </ion-input>
+        @if (confirmPasswordError()) {
+          <p class="field-error">{{ confirmPasswordError() }}</p>
+        }
+      </div>
 
-    @if (errorMessage()) {
-      <p class="error-message">{{ errorMessage() }}</p>
-    }
-
-    <ion-button expand="block" [disabled]="isLoading()" (click)="onSignup()">
-      @if (isLoading()) {
-        <ion-spinner name="crescent" />
-      } @else {
-        Create Account
+      @if (errorMessage()) {
+        <p class="error-message">{{ errorMessage() }}</p>
       }
-    </ion-button>
 
-    <p class="switch-auth">
-      Already have an account?
-      <a routerLink="/home/login">Log In</a>
-    </p>
+      <ion-button expand="block" [disabled]="isLoading()" (click)="onSignup()">
+        @if (isLoading()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          Create Account
+        }
+      </ion-button>
+
+      <p class="switch-auth">
+        Already have an account?
+        <a routerLink="/home/login">Log In</a>
+      </p>
+    </div>
   </div>
 </div>

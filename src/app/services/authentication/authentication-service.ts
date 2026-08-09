@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable } from 'rxjs';
+import { catchError, forkJoin, Observable, throwError } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
@@ -82,19 +82,26 @@ export class AuthenticationService {
 
   public login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http
-      .post<{ id: string; username: string; email: string; token: string }>(
-        `${this.apiUrl}/users/login`,   // ← new dedicated endpoint
-        credentials,                    // ← goes in request BODY, not URL
-      )
+      .post<{
+        id: string;
+        username: string;
+        email: string;
+        token: string;
+      }>(`${this.apiUrl}/users/login`, credentials)
       .pipe(
         map((response) => {
           const { token, ...user } = response;
 
-          // Single source of truth — store everything here, not in the component
           this.storage.set(this.userKey, JSON.stringify(user));
           this.storage.set('token', token);
 
           return { token, user };
+        }),
+        catchError((error: HttpErrorResponse) => {
+          const message: string =
+            error.error?.message ?? 'Login failed. Please try again.';
+
+          return throwError((): Error => new Error(message));
         }),
       );
   }

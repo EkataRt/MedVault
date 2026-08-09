@@ -1,8 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../../../../services/authentication/authentication-service';
 import { StorageService } from '../../../../shared/service/storage/storage-service';
 import { SignupRequest } from '../../../../models/user.model';
+
+const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]{3,20}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 @Component({
   selector: 'app-signup',
@@ -17,12 +20,97 @@ export class SignupComponent {
   protected confirmPassword = signal('');
   protected isLoading = signal(false);
   protected errorMessage = signal('');
+  protected showPassword = signal(false);
+  protected showConfirmPassword = signal(false);
+
+  protected hasMinLength = computed((): boolean => this.password().length >= 6);
+  protected hasNumber = computed((): boolean => /\d/.test(this.password()));
+  protected hasUppercase = computed((): boolean =>
+    /[A-Z]/.test(this.password()),
+  );
+  protected hasSpecialChar = computed((): boolean =>
+    /[^A-Za-z0-9]/.test(this.password()),
+  );
+
+  protected emailError = computed((): string => {
+    if (!this.email()) {
+      return '';
+    }
+
+    if (!EMAIL_PATTERN.test(this.email())) {
+      return 'Enter a valid email address';
+    }
+
+    return '';
+  });
+
+  protected usernameError = computed((): string => {
+    if (!this.username()) {
+      return '';
+    }
+
+    if (!USERNAME_PATTERN.test(this.username())) {
+      return '3-20 characters: letters, numbers, underscores, dots or hyphens';
+    }
+
+    return '';
+  });
+
+  protected passwordError = computed((): string => {
+    if (!this.password()) {
+      return '';
+    }
+
+    if (
+      !this.hasMinLength() ||
+      !this.hasNumber() ||
+      !this.hasUppercase() ||
+      !this.hasSpecialChar()
+    ) {
+      return 'Password does not meet the requirements below';
+    }
+
+    return '';
+  });
+
+  protected confirmPasswordError = computed((): string => {
+    if (!this.confirmPassword()) {
+      return '';
+    }
+
+    if (this.confirmPassword() !== this.password()) {
+      return 'Passwords do not match';
+    }
+
+    return '';
+  });
+
+  protected isFormValid = computed((): boolean => {
+    return (
+      !!this.email() &&
+      !!this.username() &&
+      !!this.password() &&
+      !!this.confirmPassword() &&
+      !this.emailError() &&
+      !this.usernameError() &&
+      !this.passwordError() &&
+      !this.confirmPasswordError()
+    );
+  });
 
   constructor(
     private router: Router,
     private authService: AuthenticationService,
     private storageService: StorageService,
   ) {}
+
+  public togglePasswordVisibility(): void {
+    this.showPassword.update((value) => !value);
+  }
+
+  public toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.update((value) => !value);
+  }
 
   public onSignup(): void {
     if (
@@ -35,8 +123,8 @@ export class SignupComponent {
       return;
     }
 
-    if (this.password() !== this.confirmPassword()) {
-      this.errorMessage.set('Passwords do not match');
+    if (!this.isFormValid()) {
+      this.errorMessage.set('Please fix the errors above before continuing');
       return;
     }
 
