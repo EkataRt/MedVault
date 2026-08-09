@@ -19,6 +19,9 @@ namespace MedVaultAPI.Data
 
         public DbSet<MedDocument> MedDocument { get; set; }
         public DbSet<Folder> Folder { get; set; }
+        public DbSet<MedicalTopic> MedicalTopic { get; set; }
+
+        public DbSet<MedicalMeasurement> MedicalMeasurement { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -2,7 +2,8 @@ using MedVaultAPI.Data;
 using MedVaultAPI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-
+using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.AspNetCore.SwaggerGen;
 var builder = WebApplication.CreateBuilder(args);
 
 // CORS — allow Ionic frontend
@@ -25,8 +26,11 @@ builder.Services.AddSingleton<JwtService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<AIQueryService>();
 builder.Services.AddScoped<SchedulingConflictService>();
+builder.Services.AddScoped<ReportAnalysisService>();
+builder.Services.AddScoped<SmartSearchService>();
 var app = builder.Build();
 
 // Auto-create DB tables on startup
@@ -46,7 +50,8 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads"
 });
-
+app.UseSwagger();
+app.UseSwaggerUI();
 // ✅ Correct middleware order
 app.UseRouting();           // 1. Routing first
 app.UseCors("AllowIonic");  // 2. CORS second
