@@ -142,7 +142,7 @@ export class SignupComponent {
         this.storageService.set('token', response?.token);
         this.storageService.set('user', JSON.stringify(response?.user));
         this.isLoading.set(false);
-        this.router.navigate(['/main/dashboard']);
+        this.router.navigate(['/onboarding']);
       },
       error: (error: Error) => {
         this.isLoading.set(false);

@@ -1,0 +1,17 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">What's your full name?</h2>
+  <ion-item class="step__item">
+    <ion-input
+      formControlName="fullName"
+      label="FULL NAME"
+      labelPlacement="stacked"
+      placeholder="e.g. Jane Doe"
+      type="text"
+    />
+  </ion-item>
+  @if (form.get("fullName")?.hasError("invalidName")) {
+    <ion-note class="step__error" color="danger">
+      Only letters and spaces are allowed.
+    </ion-note>
+  }
+</div>

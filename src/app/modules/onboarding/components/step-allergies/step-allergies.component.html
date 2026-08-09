@@ -1,0 +1,36 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">Do you have any allergies?</h2>
+  <div [formGroup]="allergiesGroup" class="step__allergies">
+    <div [formGroup]="commonGroup" class="step__checkboxes">
+      @for (allergy of commonAllergies; track allergy) {
+        <ion-item class="step__item" lines="none">
+          <ion-checkbox
+            [formControlName]="allergy"
+            [disabled]="isNoneSelected"
+            slot="start"
+          />
+          <ion-label>{{ allergy }}</ion-label>
+        </ion-item>
+      }
+    </div>
+    <ion-item class="step__item" lines="none">
+      <ion-input
+        formControlName="otherAllergyText"
+        label="OTHER (specify)"
+        labelPlacement="stacked"
+        [disabled]="isNoneSelected"
+        placeholder="e.g. Sesame"
+        type="text"
+      />
+    </ion-item>
+    @if (allergiesGroup.get("otherAllergyText")?.hasError("invalidAlpha")) {
+      <ion-note class="step__error" color="danger"
+        >Only letters are allowed.</ion-note
+      >
+    }
+    <ion-item class="step__item" lines="none">
+      <ion-checkbox formControlName="noneSelected" slot="start" />
+      <ion-label>None</ion-label>
+    </ion-item>
+  </div>
+</div>

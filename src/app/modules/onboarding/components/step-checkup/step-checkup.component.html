@@ -1,0 +1,22 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">When was your last checkup?</h2>
+  <ion-item class="step__item">
+    <ion-input
+      formControlName="lastCheckup"
+      label="LAST CHECKUP"
+      labelPlacement="stacked"
+      [max]="maxDate"
+      type="date"
+    />
+  </ion-item>
+  @if (form.get("lastCheckup")?.hasError("dateInFuture")) {
+    <ion-note class="step__error" color="danger"
+      >This date cannot be in the future.</ion-note
+    >
+  }
+  @if (form.get("lastCheckup")?.hasError("tooOld")) {
+    <ion-note class="step__error" color="danger"
+      >This date cannot be more than 3 years ago.</ion-note
+    >
+  }
+</div>

@@ -19,6 +19,7 @@ export interface HealthProfile {
   age: number;
   allergies: string[];
   bloodType: string;
+  dateOfBirth: string;
   fullName: string;
   height: number;
   id: string;

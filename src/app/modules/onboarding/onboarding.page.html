@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Set Up Your Health Profile</ion-title>
+  </ion-toolbar>
+  <ion-progress-bar [value]="progress" />
+</ion-header>
+<ion-content>
+  <div class="onboarding">
+    @if (errorMessage()) {
+    <ion-note class="onboarding__error" color="danger">
+      {{ errorMessage() }}
+    </ion-note>
+    }
+    <form [formGroup]="form" class="onboarding__form">
+      @switch (currentStep()) { @case (0) {
+      <app-step-name [form]="form" />
+      } @case (1) {
+      <app-step-sex [form]="form" />
+      } @case (2) {
+      <app-step-blood-type [form]="form" />
+      } @case (3) {
+      <app-step-dob [form]="form" />
+      } @case (4) {
+      <app-step-height [form]="form" />
+      } @case (5) {
+      <app-step-weight [form]="form" />
+      } @case (6) {
+      <app-step-checkup [form]="form" />
+      } @case (7) {
+      <app-step-allergies
+        [form]="form"
+        (allergiesChanged)="refreshStepValidity()"
+      />
+      } }
+    </form>
+    <div class="onboarding__nav">
+      @if (currentStep() > 0) {
+      <ion-button fill="outline" (click)="onBack()">Back</ion-button>
+      }
+      <ion-button
+        [disabled]="!stepValid() || isSubmitting()"
+        (click)="onNext()"
+      >
+        {{ currentStep() === totalSteps - 1 ? (isSubmitting() ? 'Saving...' :
+        'Submit') : 'Next' }}
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

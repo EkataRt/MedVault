@@ -59,11 +59,18 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'onboarding',
+    loadChildren: () =>
+      import('./modules/onboarding/onboarding.module').then(
+        (m) => m.OnboardingModule,
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
     path: '**',
     canActivate: [() => smartRedirect()],
     children: [],
   },
-
 ];
 
 @NgModule({

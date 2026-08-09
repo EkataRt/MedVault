@@ -1,0 +1,30 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__allergies {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__error {
+    font-size: 0.8rem;
+  }
+
+  &__item {
+    --background: var(--ion-card-background);
+    --border-radius: 10px;
+  }
+
+  &__title {
+    margin-bottom: 4px;
+  }
+}

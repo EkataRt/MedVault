@@ -14,7 +14,7 @@ export class HealthProfileService {
   constructor(private http: HttpClient) {}
 
   public createProfile(
-    data: Omit<HealthProfile, 'id'>,
+    data: Omit<HealthProfile, 'id' | 'age'>,
   ): Observable<HealthProfile> {
     return this.http.post<HealthProfile>(`${this.apiUrl}/healthProfiles`, data);
   }

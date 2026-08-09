@@ -1,0 +1,20 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">What's your weight?</h2>
+  <ion-item class="step__item">
+    <ion-input
+      formControlName="weight"
+      label="WEIGHT (KG)"
+      labelPlacement="stacked"
+      placeholder="e.g. 65.5"
+      step="0.1"
+      type="number"
+    />
+  </ion-item>
+  @if (
+    form.get("weight")?.hasError("min") || form.get("weight")?.hasError("max")
+  ) {
+    <ion-note class="step__error" color="danger"
+      >Weight must be between 0.2 and 200 kg.</ion-note
+    >
+  }
+</div>

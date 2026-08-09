@@ -1,0 +1,30 @@
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+
+  &__error {
+    border-radius: 10px;
+    display: block;
+    font-size: 0.875rem;
+    padding: 10px 14px;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+}
+
+ion-progress-bar {
+  --background: var(--ion-border-color);
+  --progress-background: var(--ion-color-primary);
+}

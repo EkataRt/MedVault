@@ -1,0 +1,30 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">When were you born?</h2>
+  <ion-item class="step__item">
+    <ion-input
+      formControlName="dateOfBirth"
+      label="DATE OF BIRTH"
+      labelPlacement="stacked"
+      [max]="maxDate"
+      type="date"
+    />
+  </ion-item>
+  @if (ageLabel) {
+    <ion-note class="step__hint">Age: {{ ageLabel }}</ion-note>
+  }
+  @if (form.get("dateOfBirth")?.hasError("dateInFuture")) {
+    <ion-note class="step__error" color="danger"
+      >Date of birth cannot be in the future.</ion-note
+    >
+  }
+  @if (form.get("dateOfBirth")?.hasError("tooYoung")) {
+    <ion-note class="step__error" color="danger"
+      >Age must be at least 1 month.</ion-note
+    >
+  }
+  @if (form.get("dateOfBirth")?.hasError("tooOld")) {
+    <ion-note class="step__error" color="danger"
+      >Age cannot exceed 100 years.</ion-note
+    >
+  }
+</div>

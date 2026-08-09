@@ -1,0 +1,17 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">What's your sex?</h2>
+  <ion-item class="step__item">
+    <ion-select
+      formControlName="sex"
+      label="SEX"
+      labelPlacement="stacked"
+      placeholder="Select"
+    >
+      @for (option of options; track option.value) {
+        <ion-select-option [value]="option.value">{{
+          option.label
+        }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-item>
+</div>

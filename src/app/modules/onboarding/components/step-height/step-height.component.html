@@ -1,0 +1,19 @@
+<div [formGroup]="form" class="step">
+  <h2 class="step__title">What's your height?</h2>
+  <ion-item class="step__item">
+    <ion-input
+      formControlName="height"
+      label="HEIGHT (CM)"
+      labelPlacement="stacked"
+      placeholder="e.g. 170"
+      type="number"
+    />
+  </ion-item>
+  @if (
+    form.get("height")?.hasError("min") || form.get("height")?.hasError("max")
+  ) {
+    <ion-note class="step__error" color="danger"
+      >Height must be between 20 and 280 cm.</ion-note
+    >
+  }
+</div>

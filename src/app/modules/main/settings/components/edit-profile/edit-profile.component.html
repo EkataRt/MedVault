@@ -6,7 +6,6 @@
     </ion-breadcrumbs>
   </ion-toolbar>
 </ion-header>
-
 <ion-content>
   <form [formGroup]="form" class="edit-profile">
     @if (errorMessage()) {
@@ -14,14 +13,12 @@
         {{ errorMessage() }}
       </ion-note>
     }
-
     @if (isSaved()) {
       <ion-note class="edit-profile__success" color="success">
         <ion-icon name="checkmark-circle-outline" />
         Changes saved successfully.
       </ion-note>
     }
-
     <ion-list class="edit-profile__list" lines="none">
       <ion-item class="edit-profile__item">
         <ion-input
@@ -32,27 +29,29 @@
           type="text"
         />
       </ion-item>
-
       <ion-item class="edit-profile__item">
-        <ion-input
+        <ion-select
           formControlName="bloodType"
           label="BLOOD TYPE"
           labelPlacement="stacked"
-          placeholder="e.g. A+"
-          type="text"
-        />
+          placeholder="Select"
+        >
+          @for (option of bloodTypeOptions; track option.value) {
+            <ion-select-option [value]="option.value">{{
+              option.label
+            }}</ion-select-option>
+          }
+        </ion-select>
       </ion-item>
-
       <ion-item class="edit-profile__item">
         <ion-input
-          formControlName="age"
-          label="AGE"
+          formControlName="dateOfBirth"
+          label="DATE OF BIRTH"
           labelPlacement="stacked"
-          placeholder="Your age"
-          type="number"
+          [max]="maxDate"
+          type="date"
         />
       </ion-item>
-
       <ion-item class="edit-profile__item">
         <ion-select
           formControlName="sex"
@@ -60,22 +59,23 @@
           labelPlacement="stacked"
           placeholder="Select sex"
         >
-          <ion-select-option value="Male">Male</ion-select-option>
-          <ion-select-option value="Female">Female</ion-select-option>
-          <ion-select-option value="Other">Other</ion-select-option>
+          @for (option of sexOptions; track option.value) {
+            <ion-select-option [value]="option.value">{{
+              option.label
+            }}</ion-select-option>
+          }
         </ion-select>
       </ion-item>
-
       <ion-item class="edit-profile__item">
         <ion-input
           formControlName="weight"
           label="WEIGHT (KG)"
           labelPlacement="stacked"
           placeholder="Weight in kg"
+          step="0.1"
           type="number"
         />
       </ion-item>
-
       <ion-item class="edit-profile__item">
         <ion-input
           formControlName="height"
@@ -85,26 +85,46 @@
           type="number"
         />
       </ion-item>
-
       <ion-item class="edit-profile__item">
         <ion-input
           formControlName="lastCheckup"
           label="LAST CHECKUP"
           labelPlacement="stacked"
+          [max]="maxDate"
           type="date"
         />
       </ion-item>
+    </ion-list>
 
-      <ion-item class="edit-profile__item">
+    <div [formGroup]="allergiesGroup" class="edit-profile__allergies">
+      <h3 class="edit-profile__allergies-title">Allergies</h3>
+      <div [formGroup]="commonGroup" class="edit-profile__checkboxes">
+        @for (allergy of commonAllergies; track allergy) {
+          <ion-item class="edit-profile__item" lines="none">
+            <ion-checkbox
+              [formControlName]="allergy"
+              [disabled]="isNoneSelected"
+              slot="start"
+            />
+            <ion-label>{{ allergy }}</ion-label>
+          </ion-item>
+        }
+      </div>
+      <ion-item class="edit-profile__item" lines="none">
         <ion-input
-          formControlName="allergies"
-          label="ALLERGIES"
+          formControlName="otherAllergyText"
+          label="OTHER (specify)"
           labelPlacement="stacked"
-          placeholder="e.g. Peanuts, Penicillin"
+          [disabled]="isNoneSelected"
+          placeholder="e.g. Sesame"
           type="text"
         />
       </ion-item>
-    </ion-list>
+      <ion-item class="edit-profile__item" lines="none">
+        <ion-checkbox formControlName="noneSelected" slot="start" />
+        <ion-label>None</ion-label>
+      </ion-item>
+    </div>
 
     <ion-button
       class="edit-profile__save"
