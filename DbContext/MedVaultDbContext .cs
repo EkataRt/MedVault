@@ -77,6 +77,53 @@ namespace MedVaultAPI.Data
                 entity.HasKey(m => m.Id);
                 entity.Property(m => m.Name).IsRequired().HasMaxLength(200);
             });
+            // Folder
+            modelBuilder.Entity<Folder>(entity =>
+            {
+                entity.HasKey(f => f.Id);
+
+                entity.Property(f => f.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(f => f.UserId)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(f => f.CreatedAt)
+                      .IsRequired();
+
+                entity.Property(f => f.ParentId)
+                      .HasMaxLength(100);
+            });
+
+            // MedDocument
+            modelBuilder.Entity<MedDocument>(entity =>
+            {
+                entity.HasKey(d => d.Id);
+
+                entity.Property(d => d.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(d => d.FileName)
+                      .IsRequired()
+                      .HasMaxLength(500);
+
+                entity.Property(d => d.Url)
+                      .IsRequired()
+                      .HasMaxLength(1000);
+
+                entity.Property(d => d.FolderId)
+                      .HasMaxLength(100);
+
+                entity.Property(d => d.UserId)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(d => d.CreatedAt)
+                      .IsRequired();
+            });
         }
     }
 }
