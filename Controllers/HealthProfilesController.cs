@@ -79,7 +79,7 @@ namespace MedVaultAPI.Controllers
             if (!string.IsNullOrEmpty(updated.BloodType)) profile.BloodType = updated.BloodType;
             if (!string.IsNullOrEmpty(updated.Sex)) profile.Sex = updated.Sex;
             if (!string.IsNullOrEmpty(updated.LastCheckup)) profile.LastCheckup = updated.LastCheckup;
-            if (updated.Age > 0) profile.Age = updated.Age;
+            if (updated.DateOfBirth != default) profile.DateOfBirth = updated.DateOfBirth;
             if (updated.Height > 0) profile.Height = updated.Height;
             if (updated.Weight > 0) profile.Weight = updated.Weight;
 
