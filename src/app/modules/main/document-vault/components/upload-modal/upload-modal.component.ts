@@ -92,10 +92,10 @@ export class UploadModalComponent {
       .pipe(
         switchMap(({ fileName, url }) =>
           this.vaultService.createDocument({
+            createdAt: new Date().toISOString(),
             fileName,
             folderId,
             name,
-            uploadedAt: new Date().toISOString(),
             url,
             userId,
           }),

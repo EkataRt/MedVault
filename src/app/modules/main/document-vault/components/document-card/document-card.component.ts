@@ -55,11 +55,43 @@ export class DocumentCardComponent {
     await alert.present();
   }
 
-  public formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+  // Uses reportDate if available, falling back to createdAt
+  public displayDate(): string {
+    const doc = this.document();
+    const targetDate = doc.reportDate || doc.createdAt;
+    return this.formatDate(targetDate);
+  }
+
+  public formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+
+    const parsedDate = new Date(dateStr);
+    if (isNaN(parsedDate.getTime())) return '';
+
+    return parsedDate.toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  // Returns badge color for status rendering
+  public getStatusColor(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'success';
+      case 'failed':
+        return 'danger';
+      case 'processing':
+        return 'warning';
+      default:
+        return 'medium'; // Pending / Default
+    }
+  }
+
+  public isPdf(): boolean {
+    const url = this.document().url?.toLowerCase() || '';
+    const fileName = this.document().fileName?.toLowerCase() || '';
+    return url.endsWith('.pdf') || fileName.endsWith('.pdf');
   }
 }

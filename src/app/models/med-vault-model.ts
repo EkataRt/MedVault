@@ -92,11 +92,15 @@ export interface Folder {
 export interface MedDocument {
   id: string;
   name: string;
-  folderId: string;
   fileName: string;
   url: string;
+  folderId: string;
   userId: string;
-  uploadedAt: string;
+  createdAt: string;
+  extractedText?: string | null;
+  reportDate?: string | null;
+  reportType?: string | null;
+  processingStatus?: 'Pending' | 'Completed' | 'Failed' | string;
 }
 
 export interface WeeklyConsistency {

@@ -6,7 +6,7 @@
 .document-date {
   color: var(--ion-color-medium);
   font-size: 12px;
-  margin-top: 2px;
+  margin: 0;
 }
 
 .document-item {
@@ -33,6 +33,7 @@
   color: var(--ion-text-color);
   font-size: 15px;
   font-weight: 600;
+  margin: 0;
 }
 
 .document-thumb {
@@ -57,4 +58,32 @@ ion-item-option {
   font-size: 13px;
   font-weight: 500;
   min-width: 72px;
+}
+
+/* Metadata & Badges Styling */
+.title-row,
+.sub-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sub-row {
+  margin-top: 4px;
+}
+
+.metadata-badge,
+.status-badge {
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  padding: 2px 6px;
+  text-transform: capitalize;
+}
+
+.pdf-icon {
+  color: var(--ion-color-primary);
+  font-size: 28px;
 }

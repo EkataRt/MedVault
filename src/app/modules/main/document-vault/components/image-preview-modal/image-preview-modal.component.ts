@@ -24,11 +24,36 @@ export class ImagePreviewModalComponent {
     this.modalClosed.emit();
   }
 
-  public formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+  // Fallback to reportDate if available, else createdAt
+  public displayDate(): string {
+    const doc = this.document();
+    if (!doc) return '';
+    return this.formatDate(doc.reportDate || doc.createdAt);
+  }
+
+  public formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+
+    const parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return '';
+
+    return parsed.toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
+  }
+
+  public getStatusColor(status: string | undefined): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'success';
+      case 'failed':
+        return 'danger';
+      case 'processing':
+        return 'warning';
+      default:
+        return 'medium';
+    }
   }
 }

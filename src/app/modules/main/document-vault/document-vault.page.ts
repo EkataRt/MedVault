@@ -55,7 +55,9 @@ export class DocumentVaultPage implements OnInit {
   // Search state signals
   public readonly searchQuery = signal<string>('');
   public readonly searchResults = signal<MedDocument[]>([]);
-  public readonly isSearching = computed(() => this.searchQuery().trim().length > 0);
+  public readonly isSearching = computed(
+    () => this.searchQuery().trim().length > 0,
+  );
 
   ngOnInit(): void {
     const user = this.authService.getActiveUser();
@@ -79,7 +81,7 @@ export class DocumentVaultPage implements OnInit {
           }
           return this.vaultService.searchDocuments(this.userId, query);
         }),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: (results) => this.searchResults.set(results),
@@ -428,9 +430,18 @@ export class DocumentVaultPage implements OnInit {
   }
 
   public viewDocument(doc: MedDocument): void {
-    const apiOrigin = new URL(environment.apiUrl).origin;
-    const fullUrl = `${apiOrigin}${doc.url}`;
+    if (!doc?.url) return;
 
-    window.open(fullUrl, '_blank');
+    let finalUrl = doc.url;
+
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      const baseOrigin = new URL(environment.apiUrl).origin;
+
+      const cleanPath = finalUrl.startsWith('/') ? finalUrl : `/${finalUrl}`;
+      finalUrl = `${baseOrigin}${cleanPath}`;
+    }
+    finalUrl = finalUrl.replace(/^(https?)\/\/(?!\/)/, '$1://');
+
+    window.open(finalUrl, '_blank');
   }
 }

@@ -1,0 +1,44 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Magnifying glass (black) -->
+  <g fill="none" stroke="#231f20" stroke-width="34" stroke-linecap="round">
+    <circle cx="255" cy="330" r="105"/>
+    <line x1="331" y1="406" x2="455" y2="480"/>
+  </g>
+
+  <!-- Lightbulb rays (blue) -->
+  <g fill="none" stroke="#1f74b8" stroke-width="20" stroke-linecap="round">
+    <line x1="198" y1="14" x2="198" y2="44"/>
+    <line x1="141" y1="26" x2="155" y2="53"/>
+    <line x1="94" y1="60" x2="115" y2="80"/>
+    <line x1="256" y1="26" x2="242" y2="53"/>
+    <line x1="302" y1="60" x2="281" y2="80"/>
+  </g>
+
+  <!-- Lightbulb glass outline (blue) -->
+  <path d="
+    M198 92
+    a92 92 0 0 1 92 92
+    c0 42 -24 62 -34 82
+    c-8 16 -10 30 -10 46
+    l-96 0
+    c0 -16 -2 -30 -10 -46
+    c-10 -20 -34 -40 -34 -82
+    a92 92 0 0 1 92 -92
+    z"
+    fill="#ffffff" stroke="#1f74b8" stroke-width="20"/>
+
+  <!-- Lightbulb base (blue, filled) -->
+  <path d="
+    M158 312
+    l80 0
+    c0 8 -4 14 -10 16
+    l-60 0
+    c-6 -2 -10 -8 -10 -16
+    z"
+    fill="#1f74b8"/>
+  <rect x="162" y="330" width="72" height="16" rx="8" fill="#1f74b8"/>
+
+  <!-- Lightning bolt (blue) -->
+  <polygon points="212,120 160,222 196,222 182,290 244,178 204,178"
+    fill="#1f74b8"/>
+</svg>

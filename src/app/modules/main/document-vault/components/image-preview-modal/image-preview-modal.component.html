@@ -12,13 +12,42 @@
     </ion-header>
 
     <ion-content class="preview-content">
-      @if (document()) {
-        <div class="image-wrapper">
-          <img
-            class="preview-image"
-            [src]="document()?.url"
-            [alt]="document()?.name"
-          />
+      @if (document(); as doc) {
+        <div class="preview-container">
+          <!-- Image Wrapper -->
+          <div class="image-wrapper">
+            <img class="preview-image" [src]="doc.url" [alt]="doc.name" />
+          </div>
+
+          <!-- OCR Metadata & Extracted Text Card -->
+          <div class="details-card">
+            <div class="metadata-header">
+              <div class="badge-group">
+                @if (doc.reportType) {
+                  <ion-badge color="tertiary" class="meta-badge">
+                    {{ doc.reportType }}
+                  </ion-badge>
+                }
+                @if (doc.processingStatus) {
+                  <ion-badge
+                    [color]="getStatusColor(doc.processingStatus)"
+                    class="meta-badge"
+                  >
+                    {{ doc.processingStatus }}
+                  </ion-badge>
+                }
+              </div>
+            </div>
+
+            @if (doc.extractedText) {
+              <div class="ocr-section">
+                <span class="ocr-title">
+                  <ion-icon name="text-outline" /> Extracted Text
+                </span>
+                <p class="ocr-text">{{ doc.extractedText }}</p>
+              </div>
+            }
+          </div>
         </div>
       }
     </ion-content>
@@ -29,7 +58,7 @@
           <div class="footer-content">
             <span class="upload-date">
               <ion-icon name="calendar-outline" />
-              {{ formatDate(document()?.uploadedAt ?? '') }}
+              {{ displayDate() }}
             </span>
             <ion-button
               fill="clear"

@@ -9,42 +9,40 @@
 </ion-header>
 
 <ion-content>
-
   @if (errorMessage()) {
-  <p class="error-text">
-    {{ errorMessage() }}
-  </p>
+  <p class="error-text">{{ errorMessage() }}</p>
   }
 
   <!-- Search Bar -->
-  <ion-searchbar class="document-search"
-                 placeholder="Search documents..."
-                 [debounce]="300"
-                 [value]="searchQuery()"
-                 (ionInput)="onSearch($event)">
+  <ion-searchbar
+    class="document-search"
+    placeholder="Search documents..."
+    [debounce]="300"
+    [value]="searchQuery()"
+    (ionInput)="onSearch($event)"
+  >
   </ion-searchbar>
 
   <!-- Search Results View -->
   @if (isSearching()) {
 
   <div class="search-section">
-    <p class="section-label">
-      Search Results
-    </p>
+    <p class="section-label">Search Results</p>
 
     @if (searchResults().length === 0) {
     <div class="empty-state">
       <ion-icon name="search-outline"></ion-icon>
       <p>No documents found matching "{{ searchQuery() }}"</p>
     </div>
-    }
-    @else {
+    } @else {
     <ion-list lines="none" class="document-list">
       @for (doc of searchResults(); track doc.id) {
-      <app-document-card [document]="doc"
-                         (documentClick)="viewDocument(doc)"
-                         (renameDocument)="onRenameDocument(doc, $event)"
-                         (deleteDocument)="onDeleteDocument(doc)" />
+      <app-document-card
+        [document]="doc"
+        (documentClick)="openPreview(doc)"
+        (renameDocument)="onRenameDocument(doc, $event)"
+        (deleteDocument)="onDeleteDocument(doc)"
+      />
       }
     </ion-list>
     }
@@ -57,109 +55,98 @@
 
   <ion-breadcrumbs class="vault-breadcrumbs">
     @for (item of breadcrumb(); track item.level; let last = $last) {
-    <ion-breadcrumb [class.active]="last"
-                    (click)="!last && onBreadcrumbClick(item)">
+    <ion-breadcrumb
+      [class.active]="last"
+      (click)="!last && onBreadcrumbClick(item)"
+    >
       @if(item.level === 'root') {
       <ion-icon name="folder-outline" slot="start" />
-      }
-      {{item.name}}
+      } {{item.name}}
     </ion-breadcrumb>
     }
   </ion-breadcrumbs>
 
   <div class="vault-content">
-
-    @if(view() === 'root') {
-    @if(rootFolders().length === 0) {
+    @if(view() === 'root') { @if(rootFolders().length === 0) {
     <div class="empty-state">
       <ion-icon name="folder-open-outline"></ion-icon>
       <p>No folders yet. Create one to get started.</p>
     </div>
-    }
-    @else {
+    } @else {
     <ion-list lines="none">
       @for(folder of rootFolders(); track folder.id) {
-      <app-folder-card [folder]="folder"
-                       [subfolderCount]="subfolderCount()(folder.id)"
-                       [fileCount]="fileCount()(folder.id)"
-                       (folderClick)="onRootFolderClick(folder)"
-                       (renameFolder)="onRenameFolder(folder, $event)"
-                       (deleteFolder)="onDeleteFolder(folder)" />
+      <app-folder-card
+        [folder]="folder"
+        [subfolderCount]="subfolderCount()(folder.id)"
+        [fileCount]="fileCount()(folder.id)"
+        (folderClick)="onRootFolderClick(folder)"
+        (renameFolder)="onRenameFolder(folder, $event)"
+        (deleteFolder)="onDeleteFolder(folder)"
+      />
       }
     </ion-list>
-    }
-    }
-
-    @if(view() === 'folder') {
-    @if(subfolders().length === 0 && activeDocuments().length === 0) {
+    } } @if(view() === 'folder') { @if(subfolders().length === 0 &&
+    activeDocuments().length === 0) {
     <div class="empty-state">
       <ion-icon name="folder-open-outline"></ion-icon>
       <p>This folder is empty.</p>
     </div>
-    }
-    @else {
-    @if(subfolders().length > 0) {
+    } @else { @if(subfolders().length > 0) {
     <div class="section">
       <p class="section-label">Folders</p>
       <ion-list lines="none">
         @for(folder of subfolders(); track folder.id) {
-        <app-folder-card [folder]="folder"
-                         [subfolderCount]="0"
-                         [fileCount]="fileCount()(folder.id)"
-                         (folderClick)="onSubfolderClick(folder)"
-                         (renameFolder)="onRenameFolder(folder, $event)"
-                         (deleteFolder)="onDeleteFolder(folder)" />
+        <app-folder-card
+          [folder]="folder"
+          [subfolderCount]="0"
+          [fileCount]="fileCount()(folder.id)"
+          (folderClick)="onSubfolderClick(folder)"
+          (renameFolder)="onRenameFolder(folder, $event)"
+          (deleteFolder)="onDeleteFolder(folder)"
+        />
         }
       </ion-list>
     </div>
-    }
-
-    @if(activeDocuments().length > 0) {
+    } @if(activeDocuments().length > 0) {
     <div class="section">
       <p class="section-label">Files</p>
       <ion-list lines="none">
         @for(doc of activeDocuments(); track doc.id) {
-        <app-document-card [document]="doc"
-                           (documentClick)="viewDocument(doc)"
-                           (renameDocument)="onRenameDocument(doc, $event)"
-                           (deleteDocument)="onDeleteDocument(doc)" />
+        <app-document-card
+          [document]="doc"
+          (documentClick)="openPreview(doc)"
+          (renameDocument)="onRenameDocument(doc, $event)"
+          (deleteDocument)="onDeleteDocument(doc)"
+        />
         }
       </ion-list>
     </div>
-    }
-    }
-    }
-
-    @if(view() === 'subfolder') {
-    @if(activeDocuments().length === 0) {
+    } } } @if(view() === 'subfolder') { @if(activeDocuments().length === 0) {
     <div class="empty-state">
       <ion-icon name="document-outline"></ion-icon>
       <p>No documents yet.</p>
     </div>
-    }
-    @else {
+    } @else {
     <div class="section">
       <p class="section-label">Files</p>
       <ion-list lines="none">
         @for(doc of activeDocuments(); track doc.id) {
-        <app-document-card [document]="doc"
-                           (documentClick)="viewDocument(doc)"
-                           (renameDocument)="onRenameDocument(doc, $event)"
-                           (deleteDocument)="onDeleteDocument(doc)" />
+        <app-document-card
+          [document]="doc"
+          (documentClick)="openPreview(doc)"
+          (renameDocument)="onRenameDocument(doc, $event)"
+          (deleteDocument)="onDeleteDocument(doc)"
+        />
         }
       </ion-list>
     </div>
-    }
-    }
-
+    } }
   </div>
 
   }
 
   <!-- Floating Action Buttons -->
-  <ion-fab slot="fixed"
-           vertical="bottom"
-           horizontal="end">
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button (click)="toggleFab()">
       <ion-icon name="add-outline"></ion-icon>
     </ion-fab-button>
@@ -169,9 +156,7 @@
       <ion-fab-button size="small" (click)="openNewFolderAlert()">
         <ion-icon name="folder-outline"></ion-icon>
       </ion-fab-button>
-      }
-
-      @if(canUpload()) {
+      } @if(canUpload()) {
       <ion-fab-button size="small" (click)="openUploadModal()">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </ion-fab-button>
@@ -183,15 +168,18 @@
     </ion-fab-list>
   </ion-fab>
 
-  <app-upload-modal [isOpen]="uploadModalOpen()"
-                    [folderId]="activeFolderId() ?? ''"
-                    [preloadedFile]="cameraFile()"
-                    (documentUploaded)="onDocumentUploaded()"
-                    (modalClosed)="closeUploadModal()" />
+  <app-upload-modal
+    [isOpen]="uploadModalOpen()"
+    [folderId]="activeFolderId() ?? ''"
+    [preloadedFile]="cameraFile()"
+    (documentUploaded)="onDocumentUploaded()"
+    (modalClosed)="closeUploadModal()"
+  />
 
-  <app-image-preview-modal [isOpen]="previewModalOpen()"
-                           [document]="activeDocument()"
-                           (modalClosed)="closePreviewModal()"
-                           (deleteRequested)="onPreviewDeleteRequested()" />
-
+  <app-image-preview-modal
+    [isOpen]="previewModalOpen()"
+    [document]="activeDocument()"
+    (modalClosed)="closePreviewModal()"
+    (deleteRequested)="onPreviewDeleteRequested()"
+  />
 </ion-content>

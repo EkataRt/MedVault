@@ -1,12 +1,40 @@
 <ion-item-sliding>
   <ion-item class="document-item" button detail="false" (click)="onCardClick()">
+    <!-- Thumbnail Slot -->
     <div class="document-thumb" slot="start">
-      <img [src]="document().url" [alt]="document().name" />
+      <ng-container *ngIf="isPdf(); else imageThumb">
+        <ion-icon name="document-text-outline" class="pdf-icon"></ion-icon>
+      </ng-container>
+
+      <ng-template #imageThumb>
+        <img [src]="document().url" [alt]="document().name" />
+      </ng-template>
     </div>
 
     <ion-label>
-      <h3 class="document-name">{{ document().name }}</h3>
-      <p class="document-date">{{ formatDate(document().uploadedAt) }}</p>
+      <div class="title-row">
+        <h3 class="document-name">{{ document().name }}</h3>
+
+        <ion-badge
+          *ngIf="document().reportType"
+          color="tertiary"
+          class="metadata-badge"
+        >
+          {{ document().reportType }}
+        </ion-badge>
+      </div>
+
+      <div class="sub-row">
+        <p class="document-date">{{ displayDate() }}</p>
+
+        <ion-badge
+          *ngIf="document().processingStatus"
+          [color]="getStatusColor(document().processingStatus!)"
+          class="status-badge"
+        >
+          {{ document().processingStatus }}
+        </ion-badge>
+      </div>
     </ion-label>
 
     <ion-icon name="chevron-forward-outline" slot="end" class="chevron" />
