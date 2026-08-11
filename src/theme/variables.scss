@@ -77,48 +77,32 @@
   --ion-toolbar-background-glass: rgba(240, 236, 232, 0.7);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ion-background-color: #1a1614;
-    --ion-background-color-rgb: 26, 22, 20;
-    --ion-border-color: rgba(255, 255, 255, 0.08);
-    --ion-card-background: #241e1d;
-
-    --ion-color-step-50: #221c1b;
-    --ion-color-step-100: #2e2624;
-    --ion-color-step-150: #39302e;
-    --ion-color-step-200: #453a38;
-    --ion-color-step-250: #504442;
-    --ion-color-step-300: #5c4e4c;
-    --ion-color-step-350: #685856;
-    --ion-color-step-400: #736260;
-    --ion-color-step-450: #7f6c6a;
-    --ion-color-step-500: #8a7674;
-    --ion-color-step-550: #96807e;
-    --ion-color-step-600: #a18a88;
-    --ion-color-step-650: #ad9492;
-    --ion-color-step-700: #b89e9c;
-    --ion-color-step-750: #c4a8a6;
-    --ion-color-step-800: #cfb2b0;
-    --ion-color-step-850: #dbbcba;
-    --ion-color-step-900: #e6c6c4;
-    --ion-color-step-950: #f2d0ce;
-
-    --ion-item-background: #241e1d;
-    --ion-tab-bar-background: #1e1817;
-    --ion-tab-bar-background-glass: rgba(26, 22, 20, 0.85);
-    --ion-text-color: #f0ece8;
-    --ion-text-color-rgb: 240, 236, 232;
-    --ion-toolbar-background: #1e1817;
-    --ion-toolbar-background-glass: rgba(26, 22, 20, 0.7);
-  }
-}
-
 body.dark {
   --ion-background-color: #1a1614;
   --ion-background-color-rgb: 26, 22, 20;
   --ion-border-color: rgba(255, 255, 255, 0.08);
   --ion-card-background: #241e1d;
+
+  --ion-color-step-50: #221c1b;
+  --ion-color-step-100: #2e2624;
+  --ion-color-step-150: #39302e;
+  --ion-color-step-200: #453a38;
+  --ion-color-step-250: #504442;
+  --ion-color-step-300: #5c4e4c;
+  --ion-color-step-350: #685856;
+  --ion-color-step-400: #736260;
+  --ion-color-step-450: #7f6c6a;
+  --ion-color-step-500: #8a7674;
+  --ion-color-step-550: #96807e;
+  --ion-color-step-600: #a18a88;
+  --ion-color-step-650: #ad9492;
+  --ion-color-step-700: #b89e9c;
+  --ion-color-step-750: #c4a8a6;
+  --ion-color-step-800: #cfb2b0;
+  --ion-color-step-850: #dbbcba;
+  --ion-color-step-900: #e6c6c4;
+  --ion-color-step-950: #f2d0ce;
+
   --ion-item-background: #241e1d;
   --ion-tab-bar-background: #1e1817;
   --ion-tab-bar-background-glass: rgba(26, 22, 20, 0.85);

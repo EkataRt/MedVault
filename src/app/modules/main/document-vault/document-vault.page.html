@@ -14,7 +14,7 @@
   }
 
   <!-- Search Bar -->
-  <div class="search-bar-wrapper">
+  <div class="search-bar-wrapper" [class.smart-active]="smartSearchActive()">
     <ion-searchbar
       class="document-search"
       [placeholder]="searchPlaceholder()"
@@ -23,12 +23,16 @@
       show-clear-button="never"
       (ionInput)="onSearch($event)"
     ></ion-searchbar>
-    <ion-icon
-      src="assets/icons/smart-search.svg"
+
+    <button
+      type="button"
       class="smart-search-toggle"
       [class.active]="smartSearchActive()"
+      [attr.aria-label]="smartSearchActive() ? 'Disable Smart Search' : 'Enable Smart Search'"
       (click)="toggleSmartSearch()"
-    ></ion-icon>
+    >
+      <img src="assets/icons/brain.png" alt="Smart Search" />
+    </button>
   </div>
 
   <!-- Search Results View -->

@@ -1,11 +1,12 @@
 .empty-state {
-  align-items: center;
-  color: var(--ion-color-medium);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
   padding: 64px 24px;
   text-align: center;
+  color: var(--ion-color-medium);
 
   ion-icon {
     font-size: 52px;
@@ -13,18 +14,18 @@
   }
 
   p {
-    font-size: 14px;
-    line-height: 1.5;
     margin: 0;
     max-width: 240px;
+    font-size: 14px;
+    line-height: 1.5;
   }
 }
 
 .error-text {
+  padding: 12px 16px;
   color: var(--ion-color-danger);
+  text-align: center;
   font-size: 14px;
-  margin: 0 0 12px;
-  padding: 0 4px;
 }
 
 ion-fab-button {
@@ -40,30 +41,34 @@ ion-fab {
 }
 
 ion-fab-list {
-  bottom: 56px;
   position: absolute;
+  bottom: 56px;
   margin: 4px;
-  gap: 8px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.vault-content {
+  padding: 0 16px;
+  padding-bottom: 100px;
 }
 
 .section {
+  margin-top: 20px;
   margin-bottom: 24px;
 }
 
 .section-label {
+  margin: 12px 0;
   color: var(--ion-color-medium);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  margin: 0 0 8px 4px;
-  text-transform: uppercase;
 }
 
 .vault-breadcrumbs {
+  padding: 10px 16px;
   margin-bottom: 16px;
-  padding: 0 4px;
 
   ion-breadcrumb {
     --color: var(--ion-color-medium);
@@ -74,81 +79,139 @@ ion-fab-list {
   }
 }
 
-.vault-content {
-  padding-bottom: 100px;
-}
-
-.document-search {
-  padding: 12px 16px;
+.document-list {
+  background: transparent;
 }
 
 .search-section {
   padding: 0 16px;
 }
 
-.section-label {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 12px 0;
-  color: var(--ion-color-medium);
-}
+/* ==========================================
+   SMART SEARCH AREA
+========================================== */
 
-.document-list {
-  background: transparent;
-}
-
-.empty-state {
+.search-bar-wrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  color: var(--ion-color-medium);
+  gap: 8px;
+  padding: 12px 16px 20px;
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  background: linear-gradient(
+    to bottom,
+    var(--ion-background-color) 75%,
+    transparent
+  );
 }
 
-.empty-state ion-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
+.document-search {
+  flex: 1;
+  padding: 10px 0px;
 
-.error-text {
-  padding: 12px 16px;
-  color: var(--ion-color-danger);
-  text-align: center;
+  height: 100px;
+  --background: var(--ion-card-background);
+  --border-radius: 10px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
 }
-
-.vault-content {
-  padding: 0 16px;
-}
-
-.vault-breadcrumbs {
-  padding: 10px 16px;
-}
-
-.section {
-  margin-top: 20px;
+.document-search::part(container) {
+  height: 100px;
 }
 
 ion-searchbar {
-  --border-radius: 14px;
-  --box-shadow: none;
+  --box-shadow: 0 4px 12px rgba(122, 92, 88, 0.08);
+
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
+  --icon-color: var(--ion-color-medium);
+  --clear-button-color: var(--ion-color-medium);
+
+  transition: all 0.25s ease;
 }
 
-.search-bar-wrapper {
-  position: relative;
-}
+/* ==========================================
+   SMART SEARCH BUTTON
+========================================== */
 
 .smart-search-toggle {
-  color: var(--ion-color-medium);
+  width: 56px;
+  height: 56px;
+
+  border: none;
+  border-radius: 20px;
+
+  background: var(--ion-card-background);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   cursor: pointer;
-  font-size: 20px;
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
+
+  transition: all 0.3s ease;
+
+  box-shadow: 0 4px 12px rgba(122, 92, 88, 0.08);
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    transition: all 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 
   &.active {
-    color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+
+    box-shadow:
+      0 0 10px rgba(var(--ion-color-primary-rgb), 0.3),
+      0 0 25px rgba(var(--ion-color-primary-rgb), 0.2),
+      0 4px 16px rgba(var(--ion-color-primary-rgb), 0.15);
+
+    img {
+      transform: scale(1.08);
+
+      filter: drop-shadow(0 0 4px rgba(var(--ion-color-primary-rgb), 0.7))
+        drop-shadow(0 0 10px rgba(var(--ion-color-primary-rgb), 0.5));
+    }
   }
+}
+
+/* ==========================================
+   BRAIN GLOW ANIMATION
+========================================== */
+
+@keyframes brainPulse {
+  0% {
+    box-shadow:
+      0 0 10px rgba(var(--ion-color-primary-rgb), 0.35),
+      0 0 20px rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+
+  50% {
+    box-shadow:
+      0 0 18px rgba(var(--ion-color-primary-rgb), 0.6),
+      0 0 30px rgba(var(--ion-color-primary-rgb), 0.35);
+  }
+
+  100% {
+    box-shadow:
+      0 0 10px rgba(var(--ion-color-primary-rgb), 0.35),
+      0 0 20px rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+.smart-search-toggle.active {
+  animation: brainPulse 2s infinite ease-in-out;
 }

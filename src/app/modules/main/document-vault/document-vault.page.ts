@@ -64,9 +64,7 @@ export class DocumentVaultPage implements OnInit {
   public readonly smartSearchResults = signal<SmartSearchResult[]>([]);
 
   public readonly searchPlaceholder = computed(() =>
-    this.smartSearchActive()
-      ? 'Smart search: e.g. magnesium level from 2 years ago'
-      : 'Search documents...',
+    this.smartSearchActive() ? 'Smart Search Enabled' : 'Search documents',
   );
 
   ngOnInit(): void {
