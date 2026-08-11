@@ -130,14 +130,13 @@ namespace MedVaultAPI.Services
                     FolderName = folderName,
                     ReportType = document.ReportType,
                     ReportDate = document.ReportDate,
-
+                    UploadDate = document.CreatedAt,
                     Topics = docTopics
                         .Select(t => t.Topic)
                         .Distinct()
                         .ToList(),
 
                     Measurements = resultMeasurements,
-
                     Score = score
                 });
             }

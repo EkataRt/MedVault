@@ -16,6 +16,8 @@
 
         public DateTime? ReportDate { get; set; }
 
+        public string? UploadDate { get; set; }
+
         public List<string> Topics { get; set; } = new();
 
         public List<MedicalMeasurement> Measurements { get; set; } = new();
