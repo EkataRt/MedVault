@@ -4,6 +4,7 @@ using MedVaultAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedVaultAPI.Migrations
 {
     [DbContext(typeof(MedVaultDbContext))]
-    partial class MedVaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260808181154_FixMissingFolderTable")]
+    partial class FixMissingFolderTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,9 +59,6 @@ namespace MedVaultAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ExtractedText")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -69,16 +69,6 @@ namespace MedVaultAPI.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProcessingStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReportDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReportType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Url")
@@ -92,65 +82,6 @@ namespace MedVaultAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MedDocument");
-                });
-
-            modelBuilder.Entity("MedVaultAPI.Model.MedicalMeasurement", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("DocumentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("MeasuredDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("MeasurementType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("SecondaryValue")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Unit")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("Value")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MedicalMeasurement");
-                });
-
-            modelBuilder.Entity("MedVaultAPI.Model.MedicalTopic", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<double>("ConfidenceScore")
-                        .HasColumnType("float");
-
-                    b.Property<string>("DocumentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Topic")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MedicalTopic");
                 });
 
             modelBuilder.Entity("MedVaultAPI.Models.Appointment", b =>
@@ -251,6 +182,9 @@ namespace MedVaultAPI.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
                     b.Property<string>("AllergiesJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -260,9 +194,6 @@ namespace MedVaultAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FullName")

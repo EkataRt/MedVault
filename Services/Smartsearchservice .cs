@@ -76,17 +76,50 @@ namespace MedVaultAPI.Services
             {
                 topicsByDocument.TryGetValue(document.Id, out var docTopics);
                 measurementsByDocument.TryGetValue(document.Id, out var docMeasurements);
+
                 docTopics ??= new List<MedicalTopic>();
                 docMeasurements ??= new List<MedicalMeasurement>();
 
-                var score = ScoreDocument(document, docTopics, docMeasurements, parsed);
+                var score = ScoreDocument(
+                    document,
+                    docTopics,
+                    docMeasurements,
+                    parsed);
 
                 if (score <= 0)
                 {
                     continue;
                 }
 
-                folderNamesById.TryGetValue(document.FolderId, out var folderName);
+                // -----------------------------------------------------------
+                // Filter measurements returned in the search result.
+                //
+                // Example:
+                // Query: "creatin"
+                // parsed.Measurement = "Creatinine"
+                //
+                // If the document contains:
+                //   Creatinine
+                //   Calcium
+                //
+                // only Creatinine is returned.
+                // -----------------------------------------------------------
+
+                var resultMeasurements = docMeasurements;
+
+                if (parsed.Measurement != null)
+                {
+                    resultMeasurements = docMeasurements
+                        .Where(m => string.Equals(
+                            m.MeasurementType,
+                            parsed.Measurement,
+                            StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+
+                folderNamesById.TryGetValue(
+                    document.FolderId,
+                    out var folderName);
 
                 results.Add(new SmartSearchResult
                 {
@@ -97,15 +130,22 @@ namespace MedVaultAPI.Services
                     FolderName = folderName,
                     ReportType = document.ReportType,
                     ReportDate = document.ReportDate,
-                    Topics = docTopics.Select(t => t.Topic).Distinct().ToList(),
-                    Measurements = docMeasurements,
+
+                    Topics = docTopics
+                        .Select(t => t.Topic)
+                        .Distinct()
+                        .ToList(),
+
+                    Measurements = resultMeasurements,
+
                     Score = score
                 });
             }
 
             var ordered = results
                 .OrderByDescending(r => r.Score)
-                .ThenByDescending(r => r.ReportDate ?? DateTime.MinValue)
+                .ThenByDescending(
+                    r => r.ReportDate ?? DateTime.MinValue)
                 .ToList();
 
             return ordered;
@@ -116,16 +156,19 @@ namespace MedVaultAPI.Services
         // ---------------------------------------------------------------
 
         private double ScoreDocument(
-            MedDocument document,
-            List<MedicalTopic> topics,
-            List<MedicalMeasurement> measurements,
-            ParsedQuery parsed)
+    MedDocument document,
+    List<MedicalTopic> topics,
+    List<MedicalMeasurement> measurements,
+    ParsedQuery parsed)
         {
-            // Hard date filter: if the query specified a year or a date range,
-            // documents without a matching ReportDate are excluded entirely.
+            // ---------------------------------------------------------------
+            // 1. HARD DATE FILTER
+            // ---------------------------------------------------------------
+
             if (parsed.Year.HasValue)
             {
-                if (!document.ReportDate.HasValue || document.ReportDate.Value.Year != parsed.Year.Value)
+                if (!document.ReportDate.HasValue ||
+                    document.ReportDate.Value.Year != parsed.Year.Value)
                 {
                     return 0;
                 }
@@ -133,9 +176,9 @@ namespace MedVaultAPI.Services
 
             if (parsed.StartDate.HasValue && parsed.EndDate.HasValue)
             {
-                if (!document.ReportDate.HasValue
-                    || document.ReportDate.Value.Date < parsed.StartDate.Value.Date
-                    || document.ReportDate.Value.Date > parsed.EndDate.Value.Date)
+                if (!document.ReportDate.HasValue ||
+                    document.ReportDate.Value.Date < parsed.StartDate.Value.Date ||
+                    document.ReportDate.Value.Date > parsed.EndDate.Value.Date)
                 {
                     return 0;
                 }
@@ -143,160 +186,427 @@ namespace MedVaultAPI.Services
 
             double score = 0;
 
-            if (parsed.Topic != null && topics.Any(t => string.Equals(t.Topic, parsed.Topic, StringComparison.OrdinalIgnoreCase)))
+            // ---------------------------------------------------------------
+            // 2. MEASUREMENT MATCH
+            // ---------------------------------------------------------------
+
+            string? matchedMeasurement = parsed.Measurement;
+
+            // Support partial measurement searches such as:
+            // "creatin" -> Creatinine
+            // "hemog"   -> Hemoglobin
+            // "chol"    -> Cholesterol
+            //
+            // Only resolve the query to a measurement when the user has
+            // provided enough characters to identify one, AND no topic was
+            // already matched. A topic match (e.g. "blood") is a more
+            // specific, intentional signal than an accidental prefix
+            // collision with a measurement name (e.g. "Blood Pressure").
+            // Without this guard, this fallback silently reclassifies a
+            // topic search as a measurement search and hard-rejects the
+            // document below.
+            if (matchedMeasurement == null &&
+                parsed.Topic == null &&
+                !string.IsNullOrWhiteSpace(parsed.RawQuery))
             {
+                var normalizedQuery = parsed.RawQuery.Trim().ToLowerInvariant();
+
+                var possibleMeasurements = ReportAnalysisService.MeasurementTypeNames
+                    .Where(m =>
+                        m.Length >= 4 &&
+                        normalizedQuery.Length >= 4 &&
+                        m.StartsWith(normalizedQuery, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (possibleMeasurements.Count == 1)
+                {
+                    matchedMeasurement = possibleMeasurements[0];
+                }
+            }
+
+            if (matchedMeasurement != null)
+            {
+                var measurementMatch = measurements.Any(m =>
+                    string.Equals(
+                        m.MeasurementType,
+                        matchedMeasurement,
+                        StringComparison.OrdinalIgnoreCase));
+
+                // If the query is specifically asking for a measurement,
+                // documents without that measurement must NOT be returned.
+                if (!measurementMatch)
+                {
+                    return 0;
+                }
+
                 score += 5;
             }
 
-            if (parsed.Measurement != null && measurements.Any(m => string.Equals(m.MeasurementType, parsed.Measurement, StringComparison.OrdinalIgnoreCase)))
+            // ---------------------------------------------------------------
+            // 3. TOPIC MATCH
+            // ---------------------------------------------------------------
+
+            if (parsed.Topic != null)
             {
-                score += 5;
+                var topicMatch = topics.Any(t =>
+                    string.Equals(
+                        t.Topic,
+                        parsed.Topic,
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (topicMatch)
+                {
+                    score += 5;
+                }
             }
 
-            if (parsed.ReportType != null && string.Equals(document.ReportType, parsed.ReportType, StringComparison.OrdinalIgnoreCase))
+            // ---------------------------------------------------------------
+            // 4. REPORT TYPE MATCH
+            // ---------------------------------------------------------------
+
+            if (parsed.ReportType != null)
             {
-                score += 4;
+                if (string.Equals(
+                    document.ReportType,
+                    parsed.ReportType,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    score += 4;
+                }
+                else
+                {
+                    // If the user explicitly requested a report type,
+                    // don't return a different report type just because
+                    // some text happens to match.
+                    return 0;
+                }
             }
 
-            if (parsed.Year.HasValue || (parsed.StartDate.HasValue && parsed.EndDate.HasValue))
+            // ---------------------------------------------------------------
+            // 5. DATE MATCH SCORE
+            // ---------------------------------------------------------------
+
+            if (parsed.Year.HasValue ||
+                (parsed.StartDate.HasValue && parsed.EndDate.HasValue))
             {
-                // We already hard-filtered above, so reaching here means it matched.
+                // Date was already hard-filtered above.
                 score += 3;
             }
 
+            // ---------------------------------------------------------------
+            // 6. EXTRACTED TEXT MATCH
+            // ---------------------------------------------------------------
+
             var normalizedText = document.ExtractedText?.ToLowerInvariant();
-            if (!string.IsNullOrEmpty(normalizedText))
+
+            if (!string.IsNullOrWhiteSpace(normalizedText))
             {
                 var keywordsToCheck = new List<string>();
-                if (parsed.Topic != null) keywordsToCheck.AddRange(ReportAnalysisService.TopicKeywords[parsed.Topic]);
-                if (parsed.Measurement != null) keywordsToCheck.Add(parsed.Measurement.ToLowerInvariant());
+
+                if (parsed.Topic != null &&
+                    ReportAnalysisService.TopicKeywords.TryGetValue(
+                        parsed.Topic,
+                        out var topicKeywords))
+                {
+                    keywordsToCheck.AddRange(topicKeywords);
+                }
+
+                if (matchedMeasurement != null)
+                {
+                    keywordsToCheck.Add(matchedMeasurement.ToLowerInvariant());
+                }
+
                 if (parsed.ReportType != null)
                 {
-                    var reportKeywords = ReportAnalysisService.ReportTypeKeywords
-                        .FirstOrDefault(rt => rt.Type == parsed.ReportType).Keywords;
-                    if (reportKeywords != null) keywordsToCheck.AddRange(reportKeywords);
-                }
-                if (keywordsToCheck.Count == 0) keywordsToCheck.Add(parsed.RawQuery.ToLowerInvariant());
+                    var reportType = ReportAnalysisService.ReportTypeKeywords
+                        .FirstOrDefault(rt =>
+                            string.Equals(
+                                rt.Type,
+                                parsed.ReportType,
+                                StringComparison.OrdinalIgnoreCase));
 
-                if (keywordsToCheck.Any(k => !string.IsNullOrWhiteSpace(k) && normalizedText.Contains(k)))
+                    if (reportType.Keywords != null)
+                    {
+                        keywordsToCheck.AddRange(reportType.Keywords);
+                    }
+                }
+
+                if (keywordsToCheck.Any(k =>
+                    !string.IsNullOrWhiteSpace(k) &&
+                    normalizedText.Contains(k)))
                 {
                     score += 2;
                 }
             }
 
-            if (!string.IsNullOrEmpty(document.Name)
-                && document.Name.Contains(parsed.RawQuery, StringComparison.OrdinalIgnoreCase))
+            // ---------------------------------------------------------------
+            // 7. DOCUMENT NAME MATCH
+            // ---------------------------------------------------------------
+
+            if (!string.IsNullOrWhiteSpace(document.Name) &&
+                !string.IsNullOrWhiteSpace(parsed.RawQuery) &&
+                document.Name.Contains(
+                    parsed.RawQuery,
+                    StringComparison.OrdinalIgnoreCase))
             {
                 score += 1;
             }
 
             return score;
         }
-
         // ---------------------------------------------------------------
         // Query parsing (sections 21-22 of the spec)
         // ---------------------------------------------------------------
 
-        private static readonly Regex YearPattern = new(@"\b(19|20)\d{2}\b");
-        private static readonly Regex LastNMonthsPattern = new(@"last\s+(\d+)\s+month", RegexOptions.IgnoreCase);
-        private static readonly Regex LastNYearsPattern = new(@"last\s+(\d+)\s+year", RegexOptions.IgnoreCase);
-        private static readonly Regex LastMonthPattern = new(@"last\s+month\b", RegexOptions.IgnoreCase);
-        private static readonly Regex LastYearPattern = new(@"last\s+year\b", RegexOptions.IgnoreCase);
-        private static readonly Regex BetweenMonthsPattern = new(@"between\s+([a-zA-Z]+)\s+and\s+([a-zA-Z]+)", RegexOptions.IgnoreCase);
+        private static readonly Regex YearPattern =
+            new(@"\b(19|20)\d{2}\b");
 
-        private static readonly Dictionary<string, int> MonthNumbersByName = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["january"] = 1,
-            ["february"] = 2,
-            ["march"] = 3,
-            ["april"] = 4,
-            ["may"] = 5,
-            ["june"] = 6,
-            ["july"] = 7,
-            ["august"] = 8,
-            ["september"] = 9,
-            ["october"] = 10,
-            ["november"] = 11,
-            ["december"] = 12
-        };
+        private static readonly Regex LastNMonthsPattern =
+            new(@"last\s+(\d+)\s+month", RegexOptions.IgnoreCase);
+
+        private static readonly Regex LastNYearsPattern =
+            new(@"last\s+(\d+)\s+year", RegexOptions.IgnoreCase);
+
+        private static readonly Regex LastMonthPattern =
+            new(@"last\s+month\b", RegexOptions.IgnoreCase);
+
+        private static readonly Regex LastYearPattern =
+            new(@"last\s+year\b", RegexOptions.IgnoreCase);
+
+        private static readonly Regex BetweenMonthsPattern =
+            new(@"between\s+([a-zA-Z]+)\s+and\s+([a-zA-Z]+)", RegexOptions.IgnoreCase);
+
+        private static readonly Dictionary<string, int> MonthNumbersByName =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["january"] = 1,
+                ["february"] = 2,
+                ["march"] = 3,
+                ["april"] = 4,
+                ["may"] = 5,
+                ["june"] = 6,
+                ["july"] = 7,
+                ["august"] = 8,
+                ["september"] = 9,
+                ["october"] = 10,
+                ["november"] = 11,
+                ["december"] = 12
+            };
 
         private ParsedQuery ParseQuery(string query)
         {
             var lowered = (query ?? string.Empty).Trim().ToLowerInvariant();
-            var result = new ParsedQuery { RawQuery = query ?? string.Empty };
 
-            // Topic: check longest/most specific keywords first (e.g. "back pain" before "eye").
+            var result = new ParsedQuery
+            {
+                RawQuery = query ?? string.Empty
+            };
+
+            // ---------------------------------------------------------------
+            // 1. TOPIC DETECTION
+            // ---------------------------------------------------------------
+            // Check the most specific/longest keyword first.
+            // For example, "back pain" should be checked before
+            // shorter/general keywords.
+
             foreach (var (topic, keywords) in ReportAnalysisService.TopicKeywords)
             {
-                if (keywords.Any(keyword => lowered.Contains(keyword)))
+                if (keywords
+                    .OrderByDescending(k => k.Length)
+                    .Any(keyword => lowered.Contains(keyword)))
                 {
                     result.Topic = topic;
                     break;
                 }
             }
 
-            // Measurement (checked independently of topic - "creatinine" is both a
-            // Kidney topic keyword and its own measurement).
-            foreach (var measurementType in ReportAnalysisService.MeasurementTypeNames)
+            // ---------------------------------------------------------------
+            // 2. MEASUREMENT DETECTION
+            // ---------------------------------------------------------------
+            // First check for an exact/full measurement name.
+            //
+            // Example:
+            // "creatinine" -> Creatinine
+            // "blood pressure" -> Blood Pressure
+            //
+            // This is checked independently of the topic because
+            // measurements such as Creatinine may also be topic keywords.
+            //
+            // Skipped if a topic was already matched - a topic keyword hit
+            // (e.g. "blood") is a more specific, intentional signal than an
+            // accidental substring collision with a measurement name (e.g.
+            // "Blood Pressure"). Without this guard, a topic-only search can
+            // be silently reclassified as a measurement search and hard-
+            // filtered out later in ScoreDocument.
+
+            if (result.Topic == null)
             {
-                if (lowered.Contains(measurementType.ToLowerInvariant()))
+                foreach (var measurementType in ReportAnalysisService.MeasurementTypeNames
+                             .OrderByDescending(m => m.Length))
                 {
-                    result.Measurement = measurementType;
-                    break;
+                    var normalizedMeasurement = measurementType.ToLowerInvariant();
+
+                    if (lowered.Contains(normalizedMeasurement))
+                    {
+                        result.Measurement = measurementType;
+                        break;
+                    }
                 }
             }
 
-            // Report type
+            // ---------------------------------------------------------------
+            // 2A. PARTIAL MEASUREMENT DETECTION
+            // ---------------------------------------------------------------
+            // If the complete measurement name was not found, allow a
+            // unique prefix match.
+            //
+            // Examples:
+            // "creatin" -> Creatinine
+            // "hemog"   -> Hemoglobin
+            // "chol"    -> Cholesterol
+            //
+            // Minimum 4 characters prevents very broad searches such as
+            // "cal" or "b" from accidentally matching measurements.
+            //
+            // Same topic guard as above applies here.
+
+            if (result.Topic == null && result.Measurement == null && lowered.Length >= 4)
+            {
+                var possibleMeasurements = ReportAnalysisService.MeasurementTypeNames
+                    .Where(measurement =>
+                        measurement.Length >= 4 &&
+                        measurement.StartsWith(
+                            lowered,
+                            StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                // Only accept the partial match if exactly one measurement
+                // matches. This prevents ambiguous searches from being
+                // assigned to the wrong measurement.
+                if (possibleMeasurements.Count == 1)
+                {
+                    result.Measurement = possibleMeasurements[0];
+                }
+            }
+
+            // ---------------------------------------------------------------
+            // 3. REPORT TYPE DETECTION
+            // ---------------------------------------------------------------
+
             foreach (var (type, keywords) in ReportAnalysisService.ReportTypeKeywords)
             {
-                if (keywords.Any(keyword => lowered.Contains(keyword)))
+                if (keywords
+                    .OrderByDescending(k => k.Length)
+                    .Any(keyword => lowered.Contains(keyword)))
                 {
                     result.ReportType = type;
                     break;
                 }
             }
 
-            // Relative date ranges take priority over an absolute year if both somehow match.
             var now = DateTime.UtcNow.Date;
 
             var lastNMonthsMatch = LastNMonthsPattern.Match(lowered);
             var lastNYearsMatch = LastNYearsPattern.Match(lowered);
             var betweenMatch = BetweenMonthsPattern.Match(lowered);
 
-            if (lastNMonthsMatch.Success && int.TryParse(lastNMonthsMatch.Groups[1].Value, out var months))
+            // ---------------------------------------------------------------
+            // Last N months
+            // Example: "kidney reports last 6 months"
+            // ---------------------------------------------------------------
+
+            if (lastNMonthsMatch.Success &&
+                int.TryParse(
+                    lastNMonthsMatch.Groups[1].Value,
+                    out var months) &&
+                months > 0)
             {
                 result.StartDate = now.AddMonths(-months);
                 result.EndDate = now;
             }
-            else if (lastNYearsMatch.Success && int.TryParse(lastNYearsMatch.Groups[1].Value, out var years))
+
+            // ---------------------------------------------------------------
+            // Last N years
+            // Example: "blood reports last 2 years"
+            // ---------------------------------------------------------------
+
+            else if (lastNYearsMatch.Success &&
+                     int.TryParse(
+                         lastNYearsMatch.Groups[1].Value,
+                         out var years) &&
+                     years > 0)
             {
                 result.StartDate = now.AddYears(-years);
                 result.EndDate = now;
             }
+
+            // ---------------------------------------------------------------
+            // Last month
+            // ---------------------------------------------------------------
+
             else if (LastMonthPattern.IsMatch(lowered))
             {
                 result.StartDate = now.AddMonths(-1);
                 result.EndDate = now;
             }
+
+            // ---------------------------------------------------------------
+            // Last year
+            // ---------------------------------------------------------------
+
             else if (LastYearPattern.IsMatch(lowered))
             {
                 result.StartDate = now.AddYears(-1);
                 result.EndDate = now;
             }
-            else if (betweenMatch.Success
-                     && MonthNumbersByName.TryGetValue(betweenMatch.Groups[1].Value, out var startMonth)
-                     && MonthNumbersByName.TryGetValue(betweenMatch.Groups[2].Value, out var endMonth))
+
+            // ---------------------------------------------------------------
+            // Between two months
+            // Example:
+            // "reports between January and March"
+            // ---------------------------------------------------------------
+
+            else if (betweenMatch.Success &&
+                     MonthNumbersByName.TryGetValue(
+                         betweenMatch.Groups[1].Value,
+                         out var startMonth) &&
+                     MonthNumbersByName.TryGetValue(
+                         betweenMatch.Groups[2].Value,
+                         out var endMonth))
             {
-                // Month-only range: assumption documented in README - uses the current year.
                 var year = now.Year;
-                result.StartDate = new DateTime(year, startMonth, 1);
-                result.EndDate = new DateTime(year, endMonth, DateTime.DaysInMonth(year, endMonth));
+
+                // If the user gives the months in reverse order,
+                // don't create an invalid range.
+                if (startMonth <= endMonth)
+                {
+                    result.StartDate = new DateTime(year, startMonth, 1);
+
+                    result.EndDate = new DateTime(
+                        year,
+                        endMonth,
+                        DateTime.DaysInMonth(year, endMonth));
+                }
+                else
+                {
+                    // Example:
+                    // "between October and February"
+                    //
+                    // Treat it as a range crossing the year boundary.
+                    result.StartDate = new DateTime(year, startMonth, 1);
+
+                    result.EndDate = new DateTime(
+                        year + 1,
+                        endMonth,
+                        DateTime.DaysInMonth(year + 1, endMonth));
+                }
             }
             else
             {
-                // Only look for a standalone year if no relative/between range was found.
                 var yearMatch = YearPattern.Match(lowered);
-                if (yearMatch.Success && int.TryParse(yearMatch.Value, out var year))
+
+                if (yearMatch.Success &&
+                    int.TryParse(yearMatch.Value, out var year))
                 {
                     result.Year = year;
                 }
