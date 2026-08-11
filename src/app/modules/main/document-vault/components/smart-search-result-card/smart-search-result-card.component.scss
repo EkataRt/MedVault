@@ -1,0 +1,28 @@
+.document-name {
+  color: var(--ion-text-color);
+  font-weight: 600;
+}
+
+.measurement-row {
+  color: var(--ion-color-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.measurements {
+  margin-top: 4px;
+}
+
+.meta-row {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+.metadata-badge {
+  margin-top: 6px;
+}
+
+.smart-result-item {
+  --padding-bottom: 8px;
+  --padding-top: 8px;
+}

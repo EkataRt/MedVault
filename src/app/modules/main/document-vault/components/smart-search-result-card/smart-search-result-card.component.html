@@ -1,0 +1,29 @@
+<ion-item lines="full" class="smart-result-item">
+  <ion-label>
+    <h3 class="document-name">{{ result().documentName }}</h3>
+    <p class="meta-row">
+      Report taken: {{ formattedReportDate() || "Unknown" }}
+    </p>
+    <p class="meta-row">
+      Upload date: {{ formattedUploadDate() || "Unknown" }}
+    </p>
+    @if (result().measurements.length > 0) {
+      <div class="measurements">
+        @for (measurement of result().measurements; track measurement.id) {
+          <p class="measurement-row">
+            {{ measurement.measurementType }}: {{ measurement.value
+            }}{{
+              measurement.secondaryValue ? "/" + measurement.secondaryValue : ""
+            }}
+            {{ measurement.unit }}
+          </p>
+        }
+      </div>
+    }
+    @if (result().reportType) {
+      <ion-badge color="tertiary" class="metadata-badge">{{
+        result().reportType
+      }}</ion-badge>
+    }
+  </ion-label>
+</ion-item>

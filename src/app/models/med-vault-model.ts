@@ -115,3 +115,28 @@ export interface NotificationExtra {
   referenceId: string;
   type: 'appointment' | 'medicine';
 }
+
+export interface MedicalMeasurement {
+  id: string;
+  documentId: string;
+  measurementType: string;
+  measuredDate?: string | null;
+  secondaryValue?: number | null;
+  unit: string;
+  userId: string;
+  value: number;
+}
+
+export interface SmartSearchResult {
+  documentId: string;
+  documentName: string;
+  fileName: string;
+  folderId?: string | null;
+  folderName?: string | null;
+  measurements: MedicalMeasurement[];
+  reportDate?: string | null;
+  reportType?: string | null;
+  score: number;
+  topics: string[];
+  uploadDate?: string | null;
+}

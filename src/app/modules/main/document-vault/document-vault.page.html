@@ -14,21 +14,41 @@
   }
 
   <!-- Search Bar -->
-  <ion-searchbar
-    class="document-search"
-    placeholder="Search documents..."
-    [debounce]="300"
-    [value]="searchQuery()"
-    (ionInput)="onSearch($event)"
-  >
-  </ion-searchbar>
+  <div class="search-bar-wrapper">
+    <ion-searchbar
+      class="document-search"
+      [placeholder]="searchPlaceholder()"
+      [debounce]="300"
+      [value]="searchQuery()"
+      show-clear-button="never"
+      (ionInput)="onSearch($event)"
+    ></ion-searchbar>
+    <ion-icon
+      src="assets/icons/smart-search.svg"
+      class="smart-search-toggle"
+      [class.active]="smartSearchActive()"
+      (click)="toggleSmartSearch()"
+    ></ion-icon>
+  </div>
 
   <!-- Search Results View -->
   @if (isSearching()) {
-
   <div class="search-section">
+    @if (smartSearchActive()) {
+    <p class="section-label">Smart Search Results</p>
+    @if (smartSearchResults().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="search-outline"></ion-icon>
+      <p>No matching data found for "{{ searchQuery() }}"</p>
+    </div>
+    } @else {
+    <ion-list lines="none" class="document-list">
+      @for (result of smartSearchResults(); track result.documentId) {
+      <app-smart-search-result-card [result]="result" />
+      }
+    </ion-list>
+    } } @else {
     <p class="section-label">Search Results</p>
-
     @if (searchResults().length === 0) {
     <div class="empty-state">
       <ion-icon name="search-outline"></ion-icon>
@@ -45,9 +65,8 @@
       />
       }
     </ion-list>
-    }
+    } }
   </div>
-
   }
 
   <!-- Normal Vault View -->

@@ -10,12 +10,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AlertController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Preferences } from '@capacitor/preferences';
-import { Subject } from 'rxjs';
+import { map, of, Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Folder, MedDocument } from '../../../models/med-vault-model';
 import { AuthenticationService } from '../../../services/authentication/authentication-service';
 import { DocumentVaultService } from '../../../services/document-vault/document-vault-service';
 import { environment } from '../../../../environments/environment';
+import { SmartSearchResult } from '../../../models/med-vault-model';
 
 type ViewState = 'root' | 'folder' | 'subfolder';
 
@@ -59,6 +60,15 @@ export class DocumentVaultPage implements OnInit {
     () => this.searchQuery().trim().length > 0,
   );
 
+  public readonly smartSearchActive = signal<boolean>(false);
+  public readonly smartSearchResults = signal<SmartSearchResult[]>([]);
+
+  public readonly searchPlaceholder = computed(() =>
+    this.smartSearchActive()
+      ? 'Smart search: e.g. magnesium level from 2 years ago'
+      : 'Search documents...',
+  );
+
   ngOnInit(): void {
     const user = this.authService.getActiveUser();
     if (!user?.id) return;
@@ -76,15 +86,32 @@ export class DocumentVaultPage implements OnInit {
         debounceTime(300),
         distinctUntilChanged(),
         switchMap((query) => {
+          const isSmartSearch = this.smartSearchActive();
+
           if (!query.trim()) {
-            return [];
+            return of({
+              isSmartSearch,
+              results: [] as (MedDocument | SmartSearchResult)[],
+            });
           }
-          return this.vaultService.searchDocuments(this.userId, query);
+
+          const request: Observable<MedDocument[] | SmartSearchResult[]> =
+            isSmartSearch
+              ? this.vaultService.smartSearchDocuments(this.userId, query)
+              : this.vaultService.searchDocuments(this.userId, query);
+
+          return request.pipe(map((results) => ({ isSmartSearch, results })));
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (results) => this.searchResults.set(results),
+        next: ({ isSmartSearch, results }) => {
+          if (isSmartSearch) {
+            this.smartSearchResults.set(results as SmartSearchResult[]);
+          } else {
+            this.searchResults.set(results as MedDocument[]);
+          }
+        },
         error: () => this.errorMessage.set('Search failed. Please try again.'),
       });
   }
@@ -99,6 +126,13 @@ export class DocumentVaultPage implements OnInit {
   public clearSearch(): void {
     this.searchQuery.set('');
     this.searchResults.set([]);
+  }
+
+  public toggleSmartSearch(): void {
+    this.smartSearchActive.update((active) => !active);
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+    this.smartSearchResults.set([]);
   }
 
   // --- Upload Handler ---

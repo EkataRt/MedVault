@@ -1,6 +1,11 @@
-import { HttpClient, HttpParams } from '@angular/common/http'; import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, signal } from '@angular/core';
 import { forkJoin, Observable, switchMap, tap } from 'rxjs';
-import { Folder, MedDocument } from '../../models/med-vault-model';
+import {
+  Folder,
+  MedDocument,
+  SmartSearchResult,
+} from '../../models/med-vault-model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -105,23 +110,32 @@ export class DocumentVaultService {
   }
   public searchDocuments(
     userId: string,
-    query: string
+    query: string,
   ): Observable<MedDocument[]> {
+    const params = new HttpParams().set('userId', userId).set('query', query);
 
-    const params = new HttpParams()
-      .set('userId', userId)
-      .set('query', query);
+    return this.http.get<MedDocument[]>(`${this.base}/documents/search`, {
+      params,
+    });
+  }
+  public smartSearchDocuments(
+    userId: string,
+    query: string,
+  ): Observable<SmartSearchResult[]> {
+    const params = new HttpParams().set('userId', userId).set('query', query);
 
-    return this.http.get<MedDocument[]>(
-      `${this.base}/documents/search`,
-      { params }
+    return this.http.get<SmartSearchResult[]>(
+      `${this.base}/documents/smart-search`,
+      { params },
     );
   }
-  
+
   public deleteDocument(id: string, fileName: string): Observable<unknown> {
     return this.http.delete(`${this.base}/documents/${id}`).pipe(
       // Updated route: matches /documents/upload/{fileName}
-      switchMap(() => this.http.delete(`${this.base}/documents/upload/${fileName}`)),
+      switchMap(() =>
+        this.http.delete(`${this.base}/documents/upload/${fileName}`),
+      ),
       tap(() =>
         this.documents.update((docs) => docs.filter((d) => d.id !== id)),
       ),

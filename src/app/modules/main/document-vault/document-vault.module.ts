@@ -8,6 +8,7 @@ import { DocumentCardComponent } from './components/document-card/document-card.
 import { FolderCardComponent } from './components/folder-card/folder-card.component';
 import { ImagePreviewModalComponent } from './components/image-preview-modal/image-preview-modal.component';
 import { UploadModalComponent } from './components/upload-modal/upload-modal.component';
+import { SmartSearchResultCardComponent } from './components/smart-search-result-card/smart-search-result-card.component';
 import { SharedModule } from '../../../shared/shared-module';
 
 @NgModule({
@@ -24,6 +25,7 @@ import { SharedModule } from '../../../shared/shared-module';
     FolderCardComponent,
     ImagePreviewModalComponent,
     UploadModalComponent,
+    SmartSearchResultCardComponent,
   ],
 })
 export class DocumentVaultPageModule {}
