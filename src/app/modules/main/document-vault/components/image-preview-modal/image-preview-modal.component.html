@@ -13,63 +13,67 @@
 
     <ion-content class="preview-content">
       @if (document(); as doc) {
-        <div class="preview-container">
-          <!-- Image Wrapper -->
-          <div class="image-wrapper">
-            <img class="preview-image" [src]="doc.url" [alt]="doc.name" />
-          </div>
-
-          <!-- OCR Metadata & Extracted Text Card -->
-          <div class="details-card">
-            <div class="metadata-header">
-              <div class="badge-group">
-                @if (doc.reportType) {
-                  <ion-badge color="tertiary" class="meta-badge">
-                    {{ doc.reportType }}
-                  </ion-badge>
-                }
-                @if (doc.processingStatus) {
-                  <ion-badge
-                    [color]="getStatusColor(doc.processingStatus)"
-                    class="meta-badge"
-                  >
-                    {{ doc.processingStatus }}
-                  </ion-badge>
-                }
-              </div>
-            </div>
-
-            @if (doc.extractedText) {
-              <div class="ocr-section">
-                <span class="ocr-title">
-                  <ion-icon name="text-outline" /> Extracted Text
-                </span>
-                <p class="ocr-text">{{ doc.extractedText }}</p>
-              </div>
-            }
-          </div>
+      <div class="preview-container">
+        <!-- Image / PDF Wrapper -->
+        <div class="image-wrapper">
+          @if (doc.url && isPdf(doc.url)) {
+          <iframe class="preview-pdf"
+                  [src]="safeUrl(doc.url)"
+                  width="100%"
+                  height="500px"
+                  frameborder="0"></iframe>
+          } @else {
+          <img class="preview-image" [src]="doc.url" [alt]="doc.name" />
+          }
         </div>
+
+        <!-- OCR Metadata & Extracted Text Card -->
+        <div class="details-card">
+          <div class="metadata-header">
+            <div class="badge-group">
+              @if (doc.reportType) {
+              <ion-badge color="tertiary" class="meta-badge">
+                {{ doc.reportType }}
+              </ion-badge>
+              }
+              @if (doc.processingStatus) {
+              <ion-badge [color]="getStatusColor(doc.processingStatus)"
+                         class="meta-badge">
+                {{ doc.processingStatus }}
+              </ion-badge>
+              }
+            </div>
+          </div>
+
+          @if (doc.extractedText) {
+          <div class="ocr-section">
+            <span class="ocr-title">
+              <ion-icon name="text-outline" /> Extracted Text
+            </span>
+            <p class="ocr-text">{{ doc.extractedText }}</p>
+          </div>
+          }
+        </div>
+      </div>
       }
     </ion-content>
 
     <ion-footer>
       <ion-toolbar class="footer-toolbar">
         @if (document()) {
-          <div class="footer-content">
-            <span class="upload-date">
-              <ion-icon name="calendar-outline" />
-              {{ displayDate() }}
-            </span>
-            <ion-button
-              fill="clear"
-              color="danger"
-              class="delete-btn"
-              (click)="onDelete()"
-            >
-              <ion-icon name="trash-outline" slot="start" />
-              Delete
-            </ion-button>
-          </div>
+        <div class="footer-content">
+          <span class="upload-date">
+            <ion-icon name="calendar-outline" />
+            {{ displayDate() }}
+          </span>
+          <ion-button fill="clear"
+                      color="danger"
+                      class="delete-btn"
+                      (click)="onDelete()">
+            <ion-icon name="trash-outline" slot="start" />
+            Delete
+          </ion-button>
+        </div>
         }
       </ion-toolbar>
     </ion-footer>
