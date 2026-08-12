@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MedVaultAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class ReplaceAgeWithDateOfBirth : Migration
+    public partial class HealthProfileUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,17 +15,22 @@ namespace MedVaultAPI.Migrations
                 name: "Age",
                 table: "HealthProfiles");
 
+          
+
             migrationBuilder.AddColumn<DateTime>(
                 name: "DateOfBirth",
                 table: "HealthProfiles",
                 type: "datetime2",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            
+
             migrationBuilder.DropColumn(
                 name: "DateOfBirth",
                 table: "HealthProfiles");

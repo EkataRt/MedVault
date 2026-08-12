@@ -15,6 +15,7 @@
         public string? ReportType { get; set; }
 
         public DateTime? ReportDate { get; set; }
+        public string? UploadDate { get; set; }
 
         public List<string> Topics { get; set; } = new();
 
