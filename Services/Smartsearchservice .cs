@@ -6,17 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MedVaultAPI.Services
 {
-    /// <summary>
-    /// V1 Smart Search service. No interface by design.
-    ///
-    /// Pipeline: parse query into simple filters (topic / measurement / report type /
-    /// year / date range) -> load the user's documents (+ topics + measurements) ->
-    /// score each document with simple rule-based scoring -> sort -> return.
-    ///
-    /// This is deliberately not NLP/TF-IDF. The "ParsedQuery" step and the scoring
-    /// step are separated so a future version can swap in TF-IDF + cosine similarity
-    /// against ExtractedText without touching the controller or the parsing logic.
-    /// </summary>
+
     public class SmartSearchService
     {
         private readonly MedVaultDbContext _db;
@@ -40,9 +30,6 @@ namespace MedVaultAPI.Services
         public async Task<object> SearchAsync(string userId, string query)
         {
             var parsed = ParseQuery(query);
-
-            // Pull the user's documents plus their related topics/measurements.
-            // Deliberately NOT scoped to a folder - Smart Search spans the whole account.
             var documents = await _db.MedDocument
                 .Where(d => d.UserId == userId)
                 .ToListAsync();
@@ -91,20 +78,6 @@ namespace MedVaultAPI.Services
                     continue;
                 }
 
-                // -----------------------------------------------------------
-                // Filter measurements returned in the search result.
-                //
-                // Example:
-                // Query: "creatin"
-                // parsed.Measurement = "Creatinine"
-                //
-                // If the document contains:
-                //   Creatinine
-                //   Calcium
-                //
-                // only Creatinine is returned.
-                // -----------------------------------------------------------
-
                 var resultMeasurements = docMeasurements;
 
                 if (parsed.Measurement != null)
@@ -150,19 +123,9 @@ namespace MedVaultAPI.Services
             return ordered;
         }
 
-        // ---------------------------------------------------------------
-        // Scoring (section 24 of the spec)
-        // ---------------------------------------------------------------
-
-        private double ScoreDocument(
-    MedDocument document,
-    List<MedicalTopic> topics,
-    List<MedicalMeasurement> measurements,
-    ParsedQuery parsed)
+        private double ScoreDocument(MedDocument document, List<MedicalTopic> topics, List<MedicalMeasurement> measurements, ParsedQuery parsed)
         {
-            // ---------------------------------------------------------------
-            // 1. HARD DATE FILTER
-            // ---------------------------------------------------------------
+
 
             if (parsed.Year.HasValue)
             {
@@ -185,25 +148,11 @@ namespace MedVaultAPI.Services
 
             double score = 0;
 
-            // ---------------------------------------------------------------
-            // 2. MEASUREMENT MATCH
-            // ---------------------------------------------------------------
+
 
             string? matchedMeasurement = parsed.Measurement;
 
-            // Support partial measurement searches such as:
-            // "creatin" -> Creatinine
-            // "hemog"   -> Hemoglobin
-            // "chol"    -> Cholesterol
-            //
-            // Only resolve the query to a measurement when the user has
-            // provided enough characters to identify one, AND no topic was
-            // already matched. A topic match (e.g. "blood") is a more
-            // specific, intentional signal than an accidental prefix
-            // collision with a measurement name (e.g. "Blood Pressure").
-            // Without this guard, this fallback silently reclassifies a
-            // topic search as a measurement search and hard-rejects the
-            // document below.
+
             if (matchedMeasurement == null &&
                 parsed.Topic == null &&
                 !string.IsNullOrWhiteSpace(parsed.RawQuery))
@@ -231,8 +180,7 @@ namespace MedVaultAPI.Services
                         matchedMeasurement,
                         StringComparison.OrdinalIgnoreCase));
 
-                // If the query is specifically asking for a measurement,
-                // documents without that measurement must NOT be returned.
+
                 if (!measurementMatch)
                 {
                     return 0;
@@ -241,27 +189,20 @@ namespace MedVaultAPI.Services
                 score += 5;
             }
 
-            // ---------------------------------------------------------------
-            // 3. TOPIC MATCH
-            // ---------------------------------------------------------------
+
 
             if (parsed.Topic != null)
             {
                 var topicMatch = topics.Any(t =>
-                    string.Equals(
-                        t.Topic,
-                        parsed.Topic,
-                        StringComparison.OrdinalIgnoreCase));
+                    string.Equals(t.Topic, parsed.Topic, StringComparison.OrdinalIgnoreCase));
 
                 if (topicMatch)
-                {
                     score += 5;
-                }
+                else
+                    return 0;   // disqualify, consistent with ReportType handling
             }
 
-            // ---------------------------------------------------------------
-            // 4. REPORT TYPE MATCH
-            // ---------------------------------------------------------------
+
 
             if (parsed.ReportType != null)
             {
@@ -274,27 +215,16 @@ namespace MedVaultAPI.Services
                 }
                 else
                 {
-                    // If the user explicitly requested a report type,
-                    // don't return a different report type just because
-                    // some text happens to match.
                     return 0;
                 }
             }
 
-            // ---------------------------------------------------------------
-            // 5. DATE MATCH SCORE
-            // ---------------------------------------------------------------
-
             if (parsed.Year.HasValue ||
                 (parsed.StartDate.HasValue && parsed.EndDate.HasValue))
             {
-                // Date was already hard-filtered above.
                 score += 3;
             }
 
-            // ---------------------------------------------------------------
-            // 6. EXTRACTED TEXT MATCH
-            // ---------------------------------------------------------------
 
             var normalizedText = document.ExtractedText?.ToLowerInvariant();
 
@@ -338,9 +268,7 @@ namespace MedVaultAPI.Services
                 }
             }
 
-            // ---------------------------------------------------------------
-            // 7. DOCUMENT NAME MATCH
-            // ---------------------------------------------------------------
+
 
             if (!string.IsNullOrWhiteSpace(document.Name) &&
                 !string.IsNullOrWhiteSpace(parsed.RawQuery) &&
@@ -353,9 +281,7 @@ namespace MedVaultAPI.Services
 
             return score;
         }
-        // ---------------------------------------------------------------
-        // Query parsing (sections 21-22 of the spec)
-        // ---------------------------------------------------------------
+
 
         private static readonly Regex YearPattern =
             new(@"\b(19|20)\d{2}\b");
@@ -401,12 +327,7 @@ namespace MedVaultAPI.Services
                 RawQuery = query ?? string.Empty
             };
 
-            // ---------------------------------------------------------------
-            // 1. TOPIC DETECTION
-            // ---------------------------------------------------------------
-            // Check the most specific/longest keyword first.
-            // For example, "back pain" should be checked before
-            // shorter/general keywords.
+
 
             foreach (var (topic, keywords) in ReportAnalysisService.TopicKeywords)
             {
@@ -418,25 +339,6 @@ namespace MedVaultAPI.Services
                     break;
                 }
             }
-
-            // ---------------------------------------------------------------
-            // 2. MEASUREMENT DETECTION
-            // ---------------------------------------------------------------
-            // First check for an exact/full measurement name.
-            //
-            // Example:
-            // "creatinine" -> Creatinine
-            // "blood pressure" -> Blood Pressure
-            //
-            // This is checked independently of the topic because
-            // measurements such as Creatinine may also be topic keywords.
-            //
-            // Skipped if a topic was already matched - a topic keyword hit
-            // (e.g. "blood") is a more specific, intentional signal than an
-            // accidental substring collision with a measurement name (e.g.
-            // "Blood Pressure"). Without this guard, a topic-only search can
-            // be silently reclassified as a measurement search and hard-
-            // filtered out later in ScoreDocument.
 
             if (result.Topic == null)
             {
@@ -453,21 +355,7 @@ namespace MedVaultAPI.Services
                 }
             }
 
-            // ---------------------------------------------------------------
-            // 2A. PARTIAL MEASUREMENT DETECTION
-            // ---------------------------------------------------------------
-            // If the complete measurement name was not found, allow a
-            // unique prefix match.
-            //
-            // Examples:
-            // "creatin" -> Creatinine
-            // "hemog"   -> Hemoglobin
-            // "chol"    -> Cholesterol
-            //
-            // Minimum 4 characters prevents very broad searches such as
-            // "cal" or "b" from accidentally matching measurements.
-            //
-            // Same topic guard as above applies here.
+
 
             if (result.Topic == null && result.Measurement == null && lowered.Length >= 4)
             {
@@ -479,18 +367,13 @@ namespace MedVaultAPI.Services
                             StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                // Only accept the partial match if exactly one measurement
-                // matches. This prevents ambiguous searches from being
-                // assigned to the wrong measurement.
+
                 if (possibleMeasurements.Count == 1)
                 {
                     result.Measurement = possibleMeasurements[0];
                 }
             }
 
-            // ---------------------------------------------------------------
-            // 3. REPORT TYPE DETECTION
-            // ---------------------------------------------------------------
 
             foreach (var (type, keywords) in ReportAnalysisService.ReportTypeKeywords)
             {
@@ -509,10 +392,6 @@ namespace MedVaultAPI.Services
             var lastNYearsMatch = LastNYearsPattern.Match(lowered);
             var betweenMatch = BetweenMonthsPattern.Match(lowered);
 
-            // ---------------------------------------------------------------
-            // Last N months
-            // Example: "kidney reports last 6 months"
-            // ---------------------------------------------------------------
 
             if (lastNMonthsMatch.Success &&
                 int.TryParse(
@@ -524,11 +403,6 @@ namespace MedVaultAPI.Services
                 result.EndDate = now;
             }
 
-            // ---------------------------------------------------------------
-            // Last N years
-            // Example: "blood reports last 2 years"
-            // ---------------------------------------------------------------
-
             else if (lastNYearsMatch.Success &&
                      int.TryParse(
                          lastNYearsMatch.Groups[1].Value,
@@ -539,9 +413,6 @@ namespace MedVaultAPI.Services
                 result.EndDate = now;
             }
 
-            // ---------------------------------------------------------------
-            // Last month
-            // ---------------------------------------------------------------
 
             else if (LastMonthPattern.IsMatch(lowered))
             {
@@ -549,9 +420,6 @@ namespace MedVaultAPI.Services
                 result.EndDate = now;
             }
 
-            // ---------------------------------------------------------------
-            // Last year
-            // ---------------------------------------------------------------
 
             else if (LastYearPattern.IsMatch(lowered))
             {
@@ -559,11 +427,6 @@ namespace MedVaultAPI.Services
                 result.EndDate = now;
             }
 
-            // ---------------------------------------------------------------
-            // Between two months
-            // Example:
-            // "reports between January and March"
-            // ---------------------------------------------------------------
 
             else if (betweenMatch.Success &&
                      MonthNumbersByName.TryGetValue(
@@ -575,8 +438,7 @@ namespace MedVaultAPI.Services
             {
                 var year = now.Year;
 
-                // If the user gives the months in reverse order,
-                // don't create an invalid range.
+
                 if (startMonth <= endMonth)
                 {
                     result.StartDate = new DateTime(year, startMonth, 1);
@@ -588,10 +450,7 @@ namespace MedVaultAPI.Services
                 }
                 else
                 {
-                    // Example:
-                    // "between October and February"
-                    //
-                    // Treat it as a range crossing the year boundary.
+
                     result.StartDate = new DateTime(year, startMonth, 1);
 
                     result.EndDate = new DateTime(
