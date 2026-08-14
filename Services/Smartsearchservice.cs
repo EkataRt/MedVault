@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MedVaultAPI.Services
 {
-
     public class SmartSearchService
     {
         private readonly MedVaultDbContext _db;
@@ -108,25 +107,19 @@ namespace MedVaultAPI.Services
                         .Select(t => t.Topic)
                         .Distinct()
                         .ToList(),
-
                     Measurements = resultMeasurements,
                     Score = score
                 });
             }
 
-            var ordered = results
+            return results
                 .OrderByDescending(r => r.Score)
-                .ThenByDescending(
-                    r => r.ReportDate ?? DateTime.MinValue)
+                .ThenByDescending(r => r.ReportDate ?? DateTime.MinValue)
                 .ToList();
-
-            return ordered;
         }
 
         private double ScoreDocument(MedDocument document, List<MedicalTopic> topics, List<MedicalMeasurement> measurements, ParsedQuery parsed)
         {
-
-
             if (parsed.Year.HasValue)
             {
                 if (!document.ReportDate.HasValue ||
@@ -147,11 +140,7 @@ namespace MedVaultAPI.Services
             }
 
             double score = 0;
-
-
-
             string? matchedMeasurement = parsed.Measurement;
-
 
             if (matchedMeasurement == null &&
                 parsed.Topic == null &&
@@ -180,7 +169,6 @@ namespace MedVaultAPI.Services
                         matchedMeasurement,
                         StringComparison.OrdinalIgnoreCase));
 
-
                 if (!measurementMatch)
                 {
                     return 0;
@@ -188,8 +176,6 @@ namespace MedVaultAPI.Services
 
                 score += 5;
             }
-
-
 
             if (parsed.Topic != null)
             {
@@ -199,10 +185,8 @@ namespace MedVaultAPI.Services
                 if (topicMatch)
                     score += 5;
                 else
-                    return 0;   // disqualify, consistent with ReportType handling
+                    return 0; // Disqualify, consistent with ReportType handling
             }
-
-
 
             if (parsed.ReportType != null)
             {
@@ -224,7 +208,6 @@ namespace MedVaultAPI.Services
             {
                 score += 3;
             }
-
 
             var normalizedText = document.ExtractedText?.ToLowerInvariant();
 
@@ -268,8 +251,6 @@ namespace MedVaultAPI.Services
                 }
             }
 
-
-
             if (!string.IsNullOrWhiteSpace(document.Name) &&
                 !string.IsNullOrWhiteSpace(parsed.RawQuery) &&
                 document.Name.Contains(
@@ -281,7 +262,6 @@ namespace MedVaultAPI.Services
 
             return score;
         }
-
 
         private static readonly Regex YearPattern =
             new(@"\b(19|20)\d{2}\b");
@@ -327,8 +307,20 @@ namespace MedVaultAPI.Services
                 RawQuery = query ?? string.Empty
             };
 
+            // 1. EXACT MEASUREMENT DETECTION (full name)
+            foreach (var measurementType in ReportAnalysisService.MeasurementTypeNames
+                         .OrderByDescending(m => m.Length))
+            {
+                var normalizedMeasurement = measurementType.ToLowerInvariant();
 
+                if (lowered.Contains(normalizedMeasurement))
+                {
+                    result.Measurement = measurementType;
+                    break;
+                }
+            }
 
+            // 2. TOPIC DETECTION
             foreach (var (topic, keywords) in ReportAnalysisService.TopicKeywords)
             {
                 if (keywords
@@ -340,23 +332,7 @@ namespace MedVaultAPI.Services
                 }
             }
 
-            if (result.Topic == null)
-            {
-                foreach (var measurementType in ReportAnalysisService.MeasurementTypeNames
-                             .OrderByDescending(m => m.Length))
-                {
-                    var normalizedMeasurement = measurementType.ToLowerInvariant();
-
-                    if (lowered.Contains(normalizedMeasurement))
-                    {
-                        result.Measurement = measurementType;
-                        break;
-                    }
-                }
-            }
-
-
-
+            // 2A. PARTIAL MEASUREMENT DETECTION
             if (result.Topic == null && result.Measurement == null && lowered.Length >= 4)
             {
                 var possibleMeasurements = ReportAnalysisService.MeasurementTypeNames
@@ -367,14 +343,13 @@ namespace MedVaultAPI.Services
                             StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-
                 if (possibleMeasurements.Count == 1)
                 {
                     result.Measurement = possibleMeasurements[0];
                 }
             }
 
-
+            // 3. REPORT TYPE DETECTION
             foreach (var (type, keywords) in ReportAnalysisService.ReportTypeKeywords)
             {
                 if (keywords
@@ -386,63 +361,46 @@ namespace MedVaultAPI.Services
                 }
             }
 
+            // 4. DATE & TIME RANGE PARSING
             var now = DateTime.UtcNow.Date;
 
             var lastNMonthsMatch = LastNMonthsPattern.Match(lowered);
             var lastNYearsMatch = LastNYearsPattern.Match(lowered);
             var betweenMatch = BetweenMonthsPattern.Match(lowered);
 
-
             if (lastNMonthsMatch.Success &&
-                int.TryParse(
-                    lastNMonthsMatch.Groups[1].Value,
-                    out var months) &&
+                int.TryParse(lastNMonthsMatch.Groups[1].Value, out var months) &&
                 months > 0)
             {
                 result.StartDate = now.AddMonths(-months);
                 result.EndDate = now;
             }
-
             else if (lastNYearsMatch.Success &&
-                     int.TryParse(
-                         lastNYearsMatch.Groups[1].Value,
-                         out var years) &&
+                     int.TryParse(lastNYearsMatch.Groups[1].Value, out var years) &&
                      years > 0)
             {
                 result.StartDate = now.AddYears(-years);
                 result.EndDate = now;
             }
-
-
             else if (LastMonthPattern.IsMatch(lowered))
             {
                 result.StartDate = now.AddMonths(-1);
                 result.EndDate = now;
             }
-
-
             else if (LastYearPattern.IsMatch(lowered))
             {
                 result.StartDate = now.AddYears(-1);
                 result.EndDate = now;
             }
-
-
             else if (betweenMatch.Success &&
-                     MonthNumbersByName.TryGetValue(
-                         betweenMatch.Groups[1].Value,
-                         out var startMonth) &&
-                     MonthNumbersByName.TryGetValue(
-                         betweenMatch.Groups[2].Value,
-                         out var endMonth))
+                     MonthNumbersByName.TryGetValue(betweenMatch.Groups[1].Value, out var startMonth) &&
+                     MonthNumbersByName.TryGetValue(betweenMatch.Groups[2].Value, out var endMonth))
             {
                 var year = now.Year;
-
 
                 if (startMonth <= endMonth)
                 {
                     result.StartDate = new DateTime(year, startMonth, 1);
-
                     result.EndDate = new DateTime(
                         year,
                         endMonth,
@@ -450,9 +408,7 @@ namespace MedVaultAPI.Services
                 }
                 else
                 {
-
                     result.StartDate = new DateTime(year, startMonth, 1);
-
                     result.EndDate = new DateTime(
                         year + 1,
                         endMonth,

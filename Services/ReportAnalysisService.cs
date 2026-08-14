@@ -135,7 +135,7 @@ namespace MedVaultAPI.Services
                     // No extractable text (e.g. scanned/image-only PDF, unreadable
                     // image, or an unsupported file type). Do not pretend we analyzed it.
                     document.ExtractedText = null;
-                    document.ProcessingStatus = "Failed";
+                    document.ProcessingStatus = "Unscanned";
                     await _db.SaveChangesAsync();
                     return;
                 }
@@ -149,12 +149,12 @@ namespace MedVaultAPI.Services
                 await SaveTopicsAsync(document, normalizedText);
                 await SaveMeasurementsAsync(document, text);
 
-                document.ProcessingStatus = "Completed";
+                document.ProcessingStatus = "Scanned";
                 await _db.SaveChangesAsync();
             }
             catch
             {
-                document.ProcessingStatus = "Failed";
+                document.ProcessingStatus = "Unscanned";
                 await _db.SaveChangesAsync();
                 // Swallow the exception on purpose: a failed analysis must never
                 // take down document creation/upload. Add logging here if desired.
