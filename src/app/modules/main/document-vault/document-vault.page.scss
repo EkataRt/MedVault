@@ -110,16 +110,11 @@ ion-fab-list {
 
 .document-search {
   flex: 1;
-  padding: 10px 0px;
 
-  height: 100px;
   --background: var(--ion-card-background);
   --border-radius: 10px;
   --padding-top: 8px;
   --padding-bottom: 8px;
-}
-.document-search::part(container) {
-  height: 100px;
 }
 
 ion-searchbar {
@@ -188,6 +183,10 @@ ion-searchbar {
   }
 }
 
+.searchbar-input.sc-ion-searchbar-ios {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
 /* ==========================================
    BRAIN GLOW ANIMATION
 ========================================== */

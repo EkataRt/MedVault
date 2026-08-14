@@ -100,7 +100,7 @@ export interface MedDocument {
   extractedText?: string | null;
   reportDate?: string | null;
   reportType?: string | null;
-  processingStatus?: 'Pending' | 'Completed' | 'Failed' | string;
+  processingStatus?: 'Pending' | 'Scanned' | 'Unscanned' | string;
 }
 
 export interface WeeklyConsistency {

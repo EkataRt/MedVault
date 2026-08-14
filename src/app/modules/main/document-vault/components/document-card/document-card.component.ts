@@ -78,9 +78,9 @@ export class DocumentCardComponent {
   // Returns badge color for status rendering
   public getStatusColor(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'completed':
+      case 'scanned':
         return 'success';
-      case 'failed':
+      case 'unscanned':
         return 'danger';
       case 'processing':
         return 'warning';
