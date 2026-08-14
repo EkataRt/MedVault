@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MedDocument } from '../../../../../models/med-vault-model';
 
 @Component({
@@ -14,6 +14,8 @@ export class ImagePreviewModalComponent {
 
   public readonly modalClosed = output<void>();
   public readonly deleteRequested = output<void>();
+
+  constructor(private sanitizer: DomSanitizer) { }
 
   public onDismiss(): void {
     this.modalClosed.emit();
@@ -55,5 +57,16 @@ export class ImagePreviewModalComponent {
       default:
         return 'medium';
     }
+  }
+
+  // Detect whether the document URL points to a PDF file
+  public isPdf(url: string | null | undefined): boolean {
+    if (!url) return false;
+    return url.toLowerCase().split('?')[0].endsWith('.pdf');
+  }
+
+  // Sanitize the URL so Angular allows it inside an iframe src
+  public safeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

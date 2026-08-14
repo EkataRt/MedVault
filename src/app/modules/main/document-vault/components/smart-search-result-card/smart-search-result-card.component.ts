@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { SmartSearchResult } from '../../../../../models/med-vault-model';
 import { formatDate } from '../../../../../shared/utils/format-date';
 
@@ -10,6 +10,7 @@ import { formatDate } from '../../../../../shared/utils/format-date';
 })
 export class SmartSearchResultCardComponent {
   public readonly result = input.required<SmartSearchResult>();
+  public readonly resultClick = output<SmartSearchResult>();
 
   public formattedReportDate(): string {
     return formatDate(this.result().reportDate);
@@ -17,5 +18,9 @@ export class SmartSearchResultCardComponent {
 
   public formattedUploadDate(): string {
     return formatDate(this.result().uploadDate);
+  }
+
+  public onClick(): void {
+    this.resultClick.emit(this.result());
   }
 }

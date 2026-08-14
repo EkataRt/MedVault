@@ -13,49 +13,51 @@
 
     <ion-content class="ion-padding">
       @if (errorMessage()) {
-        <p class="error-text">{{ errorMessage() }}</p>
+      <p class="error-text">{{ errorMessage() }}</p>
       }
 
       <div class="dropzone" (click)="fileInput.click()">
         @if (previewUrl()) {
-          <img class="preview-img" [src]="previewUrl()!" alt="preview" />
+        @if (isPdf(selectedFile())) {
+        <iframe class="preview-pdf"
+                [src]="safeUrl(previewUrl()!)"
+                width="100%"
+                height="300px"
+                frameborder="0"></iframe>
         } @else {
-          <div class="dropzone-placeholder">
-            <ion-icon name="image-outline" />
-            <span>Tap to select an image</span>
-          </div>
+        <img class="preview-img" [src]="previewUrl()!" alt="preview" />
+        }
+        } @else {
+        <div class="dropzone-placeholder">
+          <ion-icon name="image-outline" />
+          <span>Tap to select an image</span>
+        </div>
         }
       </div>
 
-      <input
-        #fileInput
-        type="file"
-        accept="image/*,application/pdf"
-        style="display: none"
-        (change)="onFileSelected($event)"
-      />
+      <input #fileInput
+             type="file"
+             accept="image/*,application/pdf"
+             style="display: none"
+             (change)="onFileSelected($event)" />
 
       <div class="form-group">
-        <ion-input
-          label="DOCUMENT NAME"
-          labelPlacement="stacked"
-          placeholder="e.g. X-Ray Upper Jaw"
-          [value]="documentName()"
-          (ionInput)="onNameChange($any($event.target).value)"
-        />
+        <ion-input label="DOCUMENT NAME"
+                   labelPlacement="stacked"
+                   placeholder="e.g. X-Ray Upper Jaw"
+                   [value]="documentName()"
+                   (ionInput)="onNameChange($any($event.target).value)" />
       </div>
     </ion-content>
 
     <ion-footer>
       <ion-toolbar>
-        <ion-button
-          expand="block"
-          class="submit-btn"
-          [disabled]="
+        <ion-button expand="block"
+                    class="submit-btn"
+                    [disabled]="
             !selectedFile() || !documentName().trim() || isUploading()
           "
-          (click)="submit()"
-        >
+                    (click)="submit()">
           {{ isUploading() ? "Uploading..." : "Upload Document" }}
         </ion-button>
       </ion-toolbar>

@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { switchMap } from 'rxjs';
 
 import { MedDocument } from '../../../../../models/med-vault-model';
@@ -24,6 +25,7 @@ export class UploadModalComponent {
   private readonly vaultService = inject(DocumentVaultService);
   private readonly authService = inject(AuthenticationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly sanitizer = inject(DomSanitizer);
 
   public readonly isOpen = input.required<boolean>();
   public readonly folderId = input.required<string>();
@@ -113,6 +115,25 @@ export class UploadModalComponent {
           this.onDismiss();
         },
       });
+  }
+
+  // Detect whether the selected file / preview URL points to a PDF file
+  public isPdf(fileOrUrl: File | string | null | undefined): boolean {
+    if (!fileOrUrl) return false;
+
+    if (typeof fileOrUrl === 'string') {
+      return fileOrUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+    }
+
+    return (
+      fileOrUrl.type === 'application/pdf' ||
+      fileOrUrl.name.toLowerCase().endsWith('.pdf')
+    );
+  }
+
+  // Sanitize the URL so Angular allows it inside an iframe src
+  public safeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   private resetForm(): void {
