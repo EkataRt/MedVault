@@ -48,7 +48,10 @@
     } @else {
     <ion-list lines="none" class="document-list">
       @for (result of smartSearchResults(); track result.documentId) {
-      <app-smart-search-result-card [result]="result" />
+      <app-smart-search-result-card
+        [result]="result"
+        (resultClick)="onSmartResultClick(result)"
+      />
       }
     </ion-list>
     } } @else {

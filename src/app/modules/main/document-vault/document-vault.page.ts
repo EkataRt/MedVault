@@ -476,4 +476,17 @@ export class DocumentVaultPage implements OnInit {
 
     window.open(finalUrl, '_blank');
   }
+
+  public onSmartResultClick(result: SmartSearchResult): void {
+    const doc = this.vaultService
+      .documents()
+      .find((d) => d.id === result.documentId);
+
+    if (!doc) {
+      this.errorMessage.set('Could not find the original document.');
+      return;
+    }
+
+    this.openPreview(doc);
+  }
 }

@@ -10,7 +10,12 @@ import { formatDate } from '../../../../../shared/utils/format-date';
 })
 export class SmartSearchResultCardComponent {
   public readonly result = input.required<SmartSearchResult>();
-  public readonly resultClick = output<SmartSearchResult>();
+
+  public readonly resultClick = output<void>();
+
+  public onCardClick(): void {
+    this.resultClick.emit();
+  }
 
   public formattedReportDate(): string {
     return formatDate(this.result().reportDate);
@@ -18,9 +23,5 @@ export class SmartSearchResultCardComponent {
 
   public formattedUploadDate(): string {
     return formatDate(this.result().uploadDate);
-  }
-
-  public onClick(): void {
-    this.resultClick.emit(this.result());
   }
 }
