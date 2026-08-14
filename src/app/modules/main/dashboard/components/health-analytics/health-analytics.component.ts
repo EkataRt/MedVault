@@ -9,7 +9,10 @@ import {
 } from '@angular/core';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
-import { Medicine, WeeklyConsistency } from '../../../../../models/med-vault-model';
+import {
+  Medicine,
+  WeeklyConsistency,
+} from '../../../../../models/med-vault-model';
 import { AppointmentService } from '../../../../../services/appointment/appointment-service';
 import { AuthenticationService } from '../../../../../services/authentication/authentication-service';
 import { MedicineService } from '../../../../../services/medicine/medicine-service';
@@ -169,10 +172,7 @@ export class HealthAnalyticsComponent
       ),
     );
     const end = new Date(
-      Math.min(
-        new Date(medicineEnd).getTime(),
-        new Date(windowEnd).getTime(),
-      ),
+      Math.min(new Date(medicineEnd).getTime(), new Date(windowEnd).getTime()),
     );
 
     if (start > end) return 0;
@@ -252,26 +252,40 @@ export class HealthAnalyticsComponent
     const appointmentData = data.map((d) => d.appointmentConsistency);
     const medicineData = data.map((d) => d.medicineConsistency);
 
-    const isDark =
-      document.body.classList.contains('dark') ||
-      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = document.body.classList.contains('dark');
 
-    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    const tickColor = isDark ? '#a89a98' : '#8a7a78';
-    const labelColor = isDark ? '#f0ece8' : '#3d2f2f';
+    // Read computed styles directly from the canvas wrapper to ensure inherited CSS variables are resolved correctly
+    const canvasEl = this.chartCanvas.nativeElement;
+    const computedStyles = getComputedStyle(
+      canvasEl.parentElement || document.body,
+    );
+
+    const warningColor =
+      computedStyles.getPropertyValue('--ion-color-warning').trim() ||
+      '#b45309';
+    const successColor =
+      computedStyles.getPropertyValue('--ion-color-success').trim() ||
+      '#2d7a5d';
+
+    // Solid high-contrast text and axis colors (NO faint alpha blending)
+    const textColor = isDark ? '#f5f5f5' : '#261638';
+    const tickColor = isDark ? '#a0a0a0' : '#524366'; // Dark purple-grey in light mode for crisp readability
+    const gridColor = isDark
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(38, 22, 56, 0.08)';
 
     const config: ChartConfiguration<'bar'> = {
       data: {
         datasets: [
           {
-            backgroundColor: '#7a5c58',
+            backgroundColor: warningColor,
             borderRadius: 6,
             borderSkipped: false,
             data: appointmentData,
             label: 'Appointment Consistency',
           },
           {
-            backgroundColor: '#2d7a4f',
+            backgroundColor: successColor,
             borderRadius: 6,
             borderSkipped: false,
             data: medicineData,
@@ -288,9 +302,9 @@ export class HealthAnalyticsComponent
           legend: {
             align: 'center',
             labels: {
-              boxHeight: 12,
-              boxWidth: 12,
-              color: labelColor,
+              boxHeight: 10,
+              boxWidth: 10,
+              color: textColor,
               font: { family: 'DM Sans', size: 12 },
               padding: 16,
               usePointStyle: true,
@@ -298,18 +312,18 @@ export class HealthAnalyticsComponent
             position: 'top',
           },
           tooltip: {
-            backgroundColor: isDark ? '#241e1d' : '#ffffff',
-            bodyColor: isDark ? '#f0ece8' : '#3d2f2f',
+            backgroundColor: isDark ? '#1e1e1e' : '#ffffff',
+            bodyColor: textColor,
             bodyFont: { family: 'DM Sans', size: 12 },
             borderColor: isDark
-              ? 'rgba(255,255,255,0.08)'
-              : 'rgba(122,92,88,0.15)',
+              ? 'rgba(255,255,255,0.12)'
+              : 'rgba(66, 42, 92, 0.15)',
             borderWidth: 1,
             callbacks: {
               label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`,
             },
             padding: 10,
-            titleColor: isDark ? '#f0ece8' : '#3d2f2f',
+            titleColor: textColor,
             titleFont: { family: 'DM Sans', size: 12, weight: 'bold' },
           },
         },
@@ -321,6 +335,7 @@ export class HealthAnalyticsComponent
             ticks: {
               color: tickColor,
               font: { family: 'DM Sans', size: 12 },
+              maxRotation: 0,
             },
           },
           y: {
@@ -347,6 +362,6 @@ export class HealthAnalyticsComponent
       type: 'bar',
     };
 
-    this.chart = new Chart(this.chartCanvas.nativeElement, config);
+    this.chart = new Chart(canvasEl, config);
   }
 }

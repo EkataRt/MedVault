@@ -136,3 +136,15 @@ ion-header {
   color: var(--ion-color-medium);
   font-size: 12px;
 }
+
+.form-group ion-input[type="date"],
+.form-group ion-input[type="time"] {
+  color-scheme: light;
+}
+
+body.dark {
+  .form-group ion-input[type="date"],
+  .form-group ion-input[type="time"] {
+    color-scheme: dark;
+  }
+}

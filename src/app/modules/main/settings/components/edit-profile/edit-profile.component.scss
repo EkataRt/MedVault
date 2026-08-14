@@ -1,3 +1,13 @@
+ion-input[type="date"] {
+  color-scheme: light;
+}
+
+body.dark {
+  ion-input[type="date"] {
+    color-scheme: dark;
+  }
+}
+
 .edit-profile {
   display: flex;
   flex-direction: column;

@@ -1,3 +1,15 @@
+ion-input[type="date"],
+ion-input[type="time"] {
+  color-scheme: light;
+}
+
+body.dark {
+  ion-input[type="date"],
+  ion-input[type="time"] {
+    color-scheme: dark;
+  }
+}
+
 .calculated-box {
   align-items: center;
   background: rgba(var(--ion-color-primary-rgb), 0.06);

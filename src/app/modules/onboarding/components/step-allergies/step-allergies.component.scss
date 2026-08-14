@@ -22,6 +22,14 @@
   &__item {
     --background: var(--ion-card-background);
     --border-radius: 10px;
+
+    ion-checkbox {
+      margin-inline-end: 12px;
+    }
+
+    ion-label {
+      margin-inline-start: 4px;
+    }
   }
 
   &__title {

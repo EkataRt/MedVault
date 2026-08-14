@@ -1,3 +1,12 @@
+ion-input[type="date"] {
+  color-scheme: light;
+}
+
+body.dark {
+  ion-input[type="date"] {
+    color-scheme: dark;
+  }
+}
 .step {
   display: flex;
   flex-direction: column;

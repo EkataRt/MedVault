@@ -20,6 +20,7 @@ export class MainPage {
     { segment: 'dashboard', title: 'Dashboard' },
     { segment: 'document-vault', title: 'Document Vault' },
     { segment: 'medicines', title: 'Medicines' },
+    { segment: 'search-doctor', title: 'Doctor Search' },
   ];
 
   constructor(private router: Router) {
