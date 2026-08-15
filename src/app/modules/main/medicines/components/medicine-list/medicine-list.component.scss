@@ -1,9 +1,9 @@
 ion-checkbox {
   --border-color: var(--ion-border-color);
-  --border-radius: 6px;
+  --border-radius: 5px;
   --checkbox-background-checked: var(--ion-color-primary);
   --checkmark-color: var(--ion-color-primary-contrast);
-  --size: 22px;
+  --size: 18px;
   flex-shrink: 0;
 }
 
@@ -18,37 +18,46 @@ ion-item-option {
   min-width: 72px;
 }
 
-.dose-list {
+.card-header {
+  align-items: flex-start;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 10px;
 }
 
-.dose-row {
+.dose-chip {
   align-items: center;
   background: var(--ion-background-color);
   border: 1px solid var(--ion-border-color);
-  border-radius: 8px;
+  border-radius: 20px;
   cursor: pointer;
   display: flex;
-  gap: 10px;
-  justify-content: space-between;
-  padding: 8px 12px;
-  transition: opacity 0.15s ease;
+  gap: 7px;
+  padding: 5px 12px 5px 8px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 
   &.taken {
-    opacity: 0.45;
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+    border-color: rgba(var(--ion-color-success-rgb), 0.35);
 
     .dose-time {
+      color: var(--ion-color-success);
       text-decoration: line-through;
     }
   }
 }
 
+.dose-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .dose-time {
   color: var(--ion-text-color);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -79,25 +88,19 @@ ion-item-option {
   margin: 0 0 12px;
 }
 
-.item-condition {
-  align-items: center;
-  color: var(--ion-color-medium);
+.header-text {
   display: flex;
-  font-size: 13px;
-  gap: 4px;
-
-  ion-icon {
-    color: var(--ion-color-primary);
-    flex-shrink: 0;
-    font-size: 13px;
-  }
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .item-content {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 5px;
+  gap: 10px;
   padding: 14px 0;
 }
 
@@ -106,29 +109,24 @@ ion-item-option {
   font-size: 13px;
 }
 
-.item-meal {
-  align-items: center;
-  color: var(--ion-color-medium);
-  display: flex;
-  font-size: 13px;
-  gap: 4px;
-
-  ion-icon {
-    flex-shrink: 0;
-    font-size: 13px;
-  }
-}
-
 .item-meta {
+  background: var(--ion-background-color);
+  border-radius: 20px;
   color: var(--ion-color-medium);
-  font-size: 12px;
+  flex-shrink: 0;
+  font-size: 11px;
   font-weight: 600;
+  padding: 4px 9px;
+  white-space: nowrap;
 }
 
 .item-title {
   color: var(--ion-text-color);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .list-header {
@@ -146,6 +144,19 @@ ion-item-option {
   margin: 0;
 }
 
+.medicine-icon {
+  align-items: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+  border-radius: 50%;
+  color: var(--ion-color-primary);
+  display: flex;
+  flex-shrink: 0;
+  font-size: 20px;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
 .medicine-item {
   --background: var(--ion-card-background);
   --border-radius: 12px;
@@ -154,4 +165,27 @@ ion-item-option {
   --padding-end: 0;
   --padding-start: 16px;
   margin-bottom: 10px;
+}
+
+.tag {
+  align-items: center;
+  background: var(--ion-background-color);
+  border-radius: 20px;
+  color: var(--ion-color-medium);
+  display: flex;
+  font-size: 12px;
+  gap: 5px;
+  padding: 4px 10px;
+
+  ion-icon {
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

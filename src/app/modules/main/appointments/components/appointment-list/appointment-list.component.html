@@ -10,41 +10,68 @@
   @for (appt of appointments(); track appt.id) {
     <ion-item-sliding>
       <ion-item class="appointment-item" [class.visited]="appt?.visited">
-        <div class="item-content" slot="start">
-          <div class="item-meta">
-            <span class="item-date">{{ formatDate(appt?.date ?? "") }}</span>
-            <span class="item-dot">·</span>
-            <span class="item-time">{{ appt?.time }}</span>
-            @if (appt?.isFollowUp) {
-              <span class="followup-badge">Follow-up</span>
-            }
+        <div class="appt-card">
+          <!-- Top Row: Date Badge, Title, Hospital, and Status Badge -->
+          <div class="appt-card__header">
+            <div class="date-badge" [class.followup]="appt?.isFollowUp">
+              <span class="month">{{
+                formatDate(appt?.date ?? "").slice(0, 3)
+              }}</span>
+              <span class="day">{{
+                formatDate(appt?.date ?? "").match("\\d+")?.[0]
+              }}</span>
+            </div>
+
+            <div class="info-group">
+              <h3 class="title">{{ appt?.title }}</h3>
+              @if (appt?.hospital) {
+                <p class="subtitle">{{ appt?.hospital }}</p>
+              }
+            </div>
+
+            <div class="status-badge" [class.followup]="appt?.isFollowUp">
+              {{ appt?.isFollowUp ? "Follow-up" : appt?.category || "General" }}
+            </div>
           </div>
 
-          <div class="item-title">{{ appt?.title }}</div>
-
-          <div class="item-location">
-            <ion-icon name="location-outline" />
-            <span>{{ appt?.hospital }}</span>
+          <!-- Middle Row: Time & Location -->
+          <div class="appt-card__meta">
+            <div class="meta-item">
+              <ion-icon name="time-outline" />
+              <span>{{ appt?.time }}</span>
+            </div>
             @if (appt?.location) {
-              <span class="location-sub">{{ appt?.location }}</span>
+              <div class="meta-item">
+                <ion-icon name="location-sharp" class="pin-icon" />
+                <span>{{ appt?.location }}</span>
+              </div>
             }
           </div>
 
-          <ion-chip class="category-chip" color="medium">
-            {{ appt?.category }}
-          </ion-chip>
-        </div>
+          <!-- Doctor Name Row (After Time/Place, Before Category/Checkbox) -->
+          @if (appt?.doctor) {
+            <div class="appt-card__doctor">
+              <ion-icon name="person-outline" />
+              <span>{{ appt?.doctor }}</span>
+            </div>
+          }
 
-        <div slot="end" class="visited-wrap">
-          <button
-            class="visited-btn"
-            [class.checked]="appt?.visited"
-            (click)="toggleVisited(appt)"
-          >
-            @if (appt?.visited) {
-              <ion-icon name="checkmark-outline" />
-            }
-          </button>
+          <!-- Bottom Row: Category Tag & Visited Check Toggle -->
+          <div class="appt-card__footer">
+            <div class="category-tag">
+              {{ appt?.category }}
+            </div>
+
+            <button
+              class="visited-btn"
+              [class.checked]="appt?.visited"
+              (click)="toggleVisited(appt)"
+            >
+              @if (appt?.visited) {
+                <ion-icon name="checkmark-outline" />
+              }
+            </button>
+          </div>
         </div>
       </ion-item>
 
