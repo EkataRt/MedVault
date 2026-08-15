@@ -28,6 +28,7 @@ export class NotificationService {
   public readonly newNotification$ = this._newNotification$.asObservable();
 
   constructor(private readonly http: HttpClient) { }
+
   public async checkDueNotifications(userId: string): Promise<void> {
     const [medicines, appointments, existing] = await Promise.all([
       firstValueFrom(this.http.get<Medicine[]>(`${this.apiUrl}/medicines`)),
@@ -80,6 +81,10 @@ export class NotificationService {
           type: 'medicine',
           userId,
         });
+        this.showBrowserNotification(
+          `Time to take your ${medicine.name} (${medicine.dosage})`,
+          `${doseLabel} · ${mealText}`,
+        );
         created = true;
       }
     }
@@ -109,6 +114,10 @@ export class NotificationService {
             type: 'appointment',
             userId,
           });
+          this.showBrowserNotification(
+            appointment.isFollowUp ? 'Upcoming Follow-up' : 'Upcoming Appointment',
+            `Your ${label} is in 2 days.`,
+          );
           created = true;
         }
       }
@@ -128,12 +137,53 @@ export class NotificationService {
             type: 'appointment',
             userId,
           });
+          this.showBrowserNotification(
+            appointment.isFollowUp ? 'Follow-up Today' : 'Appointment Today',
+            `Your ${label} is today at ${timeStr}.`,
+          );
           created = true;
         }
       }
     }
 
     if (created) this._newNotification$.next();
+  }
+
+  public async requestBrowserPermission(): Promise<void> {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }
+
+  private playAlertSound(): void {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContextClass();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.5);
+    } catch (err) {
+      console.error('Failed to play alert sound', err);
+    }
+  }
+
+  private showBrowserNotification(title: string, body: string): void {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+
+    new Notification(title, { body });
+    this.playAlertSound();
   }
 
   public async requestPermission(): Promise<void> {

@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { from } from 'rxjs';
+import { from, interval } from 'rxjs';
 
 import { Notification } from '../../../models/med-vault-model';
 import { AuthenticationService } from '../../../services/authentication/authentication-service';
@@ -35,6 +35,17 @@ export class NotificationBellComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadNotifications();
+    this.notificationService.requestBrowserPermission();
+
+    const userId = this.authService.getActiveUser()?.id;
+
+    if (userId) {
+      interval(30000)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          this.notificationService.checkDueNotifications(userId);
+        });
+    }
 
     this.notificationService.newNotification$
       .pipe(takeUntilDestroyed(this.destroyRef))
