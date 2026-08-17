@@ -21,7 +21,6 @@ namespace MedVaultAPI.Controllers
             _db = db;
         }
 
-        // Converts DB JSON strings back to arrays for Angular
         private static HealthProfile MapToResponse(HealthProfile profile)
         {
             profile.Allergies = JsonSerializer.Deserialize<List<string>>(
@@ -67,14 +66,12 @@ namespace MedVaultAPI.Controllers
         }
 
         // PATCH /healthProfiles/{id}
-        // Angular sends: { age, allergies[], bloodType, fullName, height, lastCheckup, sex, weight }
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateHealthProfile(string id, [FromBody] HealthProfile updated)
         {
             var profile = await _db.HealthProfiles.FindAsync(id);
             if (profile == null) return NotFound();
 
-            // Update all fields Angular sends from the edit-profile form
             if (!string.IsNullOrEmpty(updated.FullName)) profile.FullName = updated.FullName;
             if (!string.IsNullOrEmpty(updated.BloodType)) profile.BloodType = updated.BloodType;
             if (!string.IsNullOrEmpty(updated.Sex)) profile.Sex = updated.Sex;
@@ -83,7 +80,6 @@ namespace MedVaultAPI.Controllers
             if (updated.Height > 0) profile.Height = updated.Height;
             if (updated.Weight > 0) profile.Weight = updated.Weight;
 
-            // Allergies — always update even if empty array (user may clear them)
             profile.AllergiesJson = JsonSerializer.Serialize(updated.Allergies ?? new(), _jsonOptions);
 
             await _db.SaveChangesAsync();

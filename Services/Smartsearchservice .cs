@@ -25,6 +25,7 @@ namespace MedVaultAPI.Services
             public int? Year;
             public DateTime? StartDate;
             public DateTime? EndDate;
+
         }
 
         public async Task<object> SearchAsync(string userId, string query)
@@ -93,6 +94,20 @@ namespace MedVaultAPI.Services
                 folderNamesById.TryGetValue(
                     document.FolderId,
                     out var folderName);
+                var confidence = 0.0;
+
+                if (parsed.Topic != null)
+                {
+                    confidence = docTopics
+                        .Where(t => string.Equals(t.Topic, parsed.Topic, StringComparison.OrdinalIgnoreCase))
+                        .Select(t => t.ConfidenceScore)
+                        .DefaultIfEmpty(0)
+                        .Max();
+                }
+                else if (docTopics.Count > 0)
+                {
+                    confidence = docTopics.Max(t => t.ConfidenceScore);
+                }
 
                 results.Add(new SmartSearchResult
                 {
@@ -110,8 +125,11 @@ namespace MedVaultAPI.Services
                         .ToList(),
 
                     Measurements = resultMeasurements,
-                    Score = score
+                    Score = score,
+                    Confidence = confidence
+
                 });
+
             }
 
             var ordered = results
@@ -186,7 +204,7 @@ namespace MedVaultAPI.Services
                     return 0;
                 }
 
-                score += 5;
+                score += 10;
             }
 
 
@@ -197,9 +215,9 @@ namespace MedVaultAPI.Services
                     string.Equals(t.Topic, parsed.Topic, StringComparison.OrdinalIgnoreCase));
 
                 if (topicMatch)
-                    score += 5;
+                    score += 7;
                 else
-                    return 0;   // disqualify, consistent with ReportType handling
+                    return 0;
             }
 
 
@@ -211,7 +229,7 @@ namespace MedVaultAPI.Services
                     parsed.ReportType,
                     StringComparison.OrdinalIgnoreCase))
                 {
-                    score += 4;
+                    score += 5;
                 }
                 else
                 {
@@ -222,7 +240,7 @@ namespace MedVaultAPI.Services
             if (parsed.Year.HasValue ||
                 (parsed.StartDate.HasValue && parsed.EndDate.HasValue))
             {
-                score += 3;
+                score += 2;
             }
 
 
@@ -264,7 +282,19 @@ namespace MedVaultAPI.Services
                     !string.IsNullOrWhiteSpace(k) &&
                     normalizedText.Contains(k)))
                 {
-                    score += 2;
+                    score += 1;
+                }
+
+               
+                if (!string.IsNullOrWhiteSpace(parsed.RawQuery))
+                {
+                    var normalizedRawQuery = parsed.RawQuery.Trim().ToLowerInvariant();
+
+                    if (normalizedRawQuery.Length >= 3 &&
+                        normalizedText.Contains(normalizedRawQuery))
+                    {
+                        score += 3;
+                    }
                 }
             }
 

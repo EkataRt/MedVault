@@ -11,5 +11,6 @@
         public string UserId { get; set; } = string.Empty;
 
         public string CreatedAt { get; set; } = string.Empty;
+
     }
 }

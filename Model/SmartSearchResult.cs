@@ -23,5 +23,6 @@
         public List<MedicalMeasurement> Measurements { get; set; } = new();
 
         public double Score { get; set; }
+        public double Confidence { get; set; }
     }
 }

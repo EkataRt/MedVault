@@ -14,17 +14,12 @@ namespace MedVaultAPI.Services
         private readonly string _tessDataPath;
         private readonly string _ocrLanguage;
 
-        // Minimum length for extracted text to be considered usable (shared by
-        // both the PDF and image extraction paths so they agree on the bar).
+        
         private const int MinExtractedTextLength = 20;
 
-        // Tesseract accuracy drops sharply below roughly 300dpi-equivalent
-        // resolution, which is common for phone photos of printed reports.
-        // Images narrower than this are upscaled before OCR.
+        
         private const int MinRecommendedWidthPx = 1600;
 
-        // Below this mean confidence, OCR output is still used but flagged in
-        // logs as potentially unreliable rather than silently trusted.
         private const float MinAcceptableConfidence = 0.6f;
 
         public ReportAnalysisService(
@@ -47,11 +42,6 @@ namespace MedVaultAPI.Services
                 : configuredLanguage;
         }
 
-        // ---------------------------------------------------------------
-        // Keyword dictionaries - kept public/static so SmartSearchService
-        // can reuse the exact same vocabulary when parsing search queries.
-        // Easy to extend: just add entries here.
-        // ---------------------------------------------------------------
         public static readonly List<(string Type, List<string> Keywords)> ReportTypeKeywords = new()
         {
             ("MRI", new() { "mri", "mri scan", "magnetic resonance" }),
@@ -79,8 +69,7 @@ namespace MedVaultAPI.Services
             ["Vitamin"] = new() { "vitamin", "deficiency" },
         };
 
-        // Non-blood-pressure measurements: name -> (regex, default unit).
-        // Regex captures the numeric value in group 1 and, if present, the unit in group 2.
+        
         private static readonly List<(string Type, Regex Pattern, string DefaultUnit)> MeasurementPatterns = new()
         {
             ("Creatinine", new Regex(@"creatinine\s*[:\-]?\s*([\d.]+)\s*(mg/dl)?", RegexOptions.IgnoreCase), "mg/dL"),
@@ -118,9 +107,7 @@ namespace MedVaultAPI.Services
         public static readonly List<string> MeasurementTypeNames =
             MeasurementPatterns.Select(m => m.Type).Append("Blood Pressure").ToList();
 
-        // ---------------------------------------------------------------
-        // Entry point
-        // ---------------------------------------------------------------
+        
         public async Task AnalyzeDocumentAsync(MedDocument document)
         {
             document.ProcessingStatus = "Processing";
@@ -132,8 +119,7 @@ namespace MedVaultAPI.Services
 
                 if (string.IsNullOrWhiteSpace(text))
                 {
-                    // No extractable text (e.g. scanned/image-only PDF, unreadable
-                    // image, or an unsupported file type). Do not pretend we analyzed it.
+                    
                     document.ExtractedText = null;
                     document.ProcessingStatus = "Failed";
                     await _db.SaveChangesAsync();
@@ -156,17 +142,11 @@ namespace MedVaultAPI.Services
             {
                 document.ProcessingStatus = "Failed";
                 await _db.SaveChangesAsync();
-                // Swallow the exception on purpose: a failed analysis must never
-                // take down document creation/upload. Add logging here if desired.
+                
             }
         }
 
-        // ---------------------------------------------------------------
-        // 1. Text extraction
-        // ---------------------------------------------------------------
-        // PDFs go through PdfPig (reads the embedded text layer directly - fast
-        // and exact). Images go through Tesseract OCR (pixel-based recognition -
-        // preprocessed below to reduce misreads).
+       
         private string? ExtractText(MedDocument document)
         {
             var safeFileName = Path.GetFileName(document.FileName);
@@ -204,8 +184,7 @@ namespace MedVaultAPI.Services
 
             var text = textBuilder.ToString();
 
-            // A text-based PDF should yield a meaningful amount of text.
-            // If it's effectively empty, this is likely a scanned/image-only PDF.
+           
             return IsUsableExtractedText(text) ? text : null;
         }
 
@@ -227,14 +206,10 @@ namespace MedVaultAPI.Services
 
                 using var engine = new TesseractEngine(_tessDataPath, _ocrLanguage, EngineMode.Default);
 
-                // Lab/medical reports are dense text blocks (often tabular), not
-                // mixed-layout pages - a single-block assumption outperforms
-                // Tesseract's "fully automatic" default page segmentation here.
+               
                 engine.DefaultPageSegMode = PageSegMode.SingleBlock;
 
-                // Restrict recognition to characters that actually appear in medical
-                // reports (letters, digits, and value/unit punctuation). This cuts
-                // down on misreads bleeding in from stray marks, logos, or noise.
+                
                 engine.SetVariable(
                     "tessedit_char_whitelist",
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:/%-() ");
@@ -250,9 +225,7 @@ namespace MedVaultAPI.Services
                 var meanConfidence = page.GetMeanConfidence();
                 if (meanConfidence < MinAcceptableConfidence)
                 {
-                    // Still return the text (missing data is worse than possibly-
-                    // imperfect data for most fields), but flag it - low-confidence
-                    // OCR on medical values should be treated as needing review.
+                    
                     _logger.LogWarning(
                         "OCR mean confidence {Confidence:P0} is below the {Threshold:P0} threshold for file {FilePath}; " +
                         "extracted measurements may be inaccurate and should be reviewed.",
@@ -268,10 +241,7 @@ namespace MedVaultAPI.Services
             }
         }
 
-        // Applies simple, low-risk preprocessing before OCR to improve accuracy on
-        // scanned/photographed medical reports: upscale if low-resolution, convert
-        // to grayscale to remove color noise (letterheads/stamps), and deskew to
-        // correct tilt from photos or crooked scans.
+        
         private static Pix PreprocessForOcr(Pix source)
         {
             var working = source;
@@ -298,14 +268,11 @@ namespace MedVaultAPI.Services
             return working;
         }
 
-        // Shared "is this text actually usable" check for both the PDF and OCR
-        // extraction paths, so they can't silently drift out of agreement.
+        
         private static bool IsUsableExtractedText(string? text) =>
             !string.IsNullOrWhiteSpace(text) && text.Trim().Length >= MinExtractedTextLength;
 
-        // ---------------------------------------------------------------
-        // 2. Report date detection
-        // ---------------------------------------------------------------
+        
         private static readonly Regex IsoDatePattern = new(@"\b(\d{4})-(\d{1,2})-(\d{1,2})\b");
         private static readonly Regex SlashOrDashDatePattern = new(@"\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b");
 
@@ -320,7 +287,6 @@ namespace MedVaultAPI.Services
             var slashMatch = SlashOrDashDatePattern.Match(text);
             if (slashMatch.Success && TryBuildDate(slashMatch.Groups[3].Value, slashMatch.Groups[2].Value, slashMatch.Groups[1].Value, out var slashDate))
             {
-                // Groups are (day, month, year) for this pattern -> passed as (year, month, day).
                 return slashDate;
             }
 
@@ -362,12 +328,9 @@ namespace MedVaultAPI.Services
             return "Medical Report";
         }
 
-        // ---------------------------------------------------------------
-        // 4. Medical topic detection
-        // ---------------------------------------------------------------
+    
         private async Task SaveTopicsAsync(MedDocument document, string normalizedText)
         {
-            // Clear previous topics for this document so re-analysis doesn't duplicate rows.
             var existing = _db.MedicalTopic.Where(t => t.DocumentId == document.Id);
             _db.MedicalTopic.RemoveRange(existing);
 
@@ -379,7 +342,6 @@ namespace MedVaultAPI.Services
                     continue;
                 }
 
-                // Simple rule-based confidence, not a medically validated score.
                 var confidence = matchCount >= 2 ? 0.9 : 0.6;
 
                 _db.MedicalTopic.Add(new MedicalTopic
@@ -397,7 +359,6 @@ namespace MedVaultAPI.Services
 
         private async Task SaveMeasurementsAsync(MedDocument document, string text)
         {
-            // Clear previous measurements for this document so re-analysis doesn't duplicate rows.
             var existing = _db.MedicalMeasurement.Where(m => m.DocumentId == document.Id);
             _db.MedicalMeasurement.RemoveRange(existing);
 

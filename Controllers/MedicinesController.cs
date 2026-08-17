@@ -54,10 +54,10 @@ namespace MedVaultAPI.Controllers
                 .Where(m => m.UserId == medicine.UserId)
                 .ToListAsync();
 
-            if (_conflictService.HasMedicineConflict(medicine, userMedicines))
-            {
-                return Conflict(new { message = "Medication schedule conflicts or is too close to an existing medicine time." });
-            }
+            //if (_conflictService.HasMedicineConflict(medicine, userMedicines))
+            //{
+            //    return Conflict(new { message = "Medication schedule conflicts or is too close to an existing medicine time." });
+            //}
 
             medicine.Id = Guid.NewGuid().ToString();
             medicine.CreatedAt = DateTime.UtcNow;

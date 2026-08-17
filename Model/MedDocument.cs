@@ -15,14 +15,13 @@
         public string UserId { get; set; } = string.Empty;
 
         public string CreatedAt { get; set; } = string.Empty;
-        //Adding for OCR
+
         public string? ExtractedText { get; set; }
 
         public DateTime? ReportDate { get; set; }
 
         public string? ReportType { get; set; }
 
-        public string ProcessingStatus { get; set; } = "Pending";
-
+        public string ProcessingStatus { get; set; } = "Pending";      
     }
 }

@@ -22,9 +22,7 @@ namespace MedVaultAPI.Services
             "Psychiatrist", "Pediatrician", "Gynecology", "Pulmonologist"
         };
 
-        // Default match score used when the AI call fails or a specialty is
-        // missing from the model's response. Kept low-ish so a failed AI call
-        // doesn't accidentally dominate the weighted score.
+        
         private const double DefaultSpecialtyMatchScore = 40.0;
 
         public AIQueryService(HttpClient httpClient, IConfiguration configuration)
@@ -32,11 +30,11 @@ namespace MedVaultAPI.Services
             _httpClient = httpClient;
 
             var apiKey = configuration["GoogleAI:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                throw new InvalidOperationException("Google AI API key not configured.");
-            }
-            _apiKey = apiKey;
+            //if (string.IsNullOrEmpty(apiKey))
+            //{
+            //    throw new InvalidOperationException("Google AI API key not configured.");
+            //}
+            //_apiKey = apiKey;
         }
 
         public async Task<string> GetIntentAsync(string userMessage)
@@ -103,7 +101,6 @@ namespace MedVaultAPI.Services
             }
             catch
             {
-                // fall through to default below
             }
 
             return "none";

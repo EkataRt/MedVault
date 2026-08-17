@@ -178,8 +178,14 @@ namespace MedVaultAPI.Controllers
             _db.MedicineNotification.Remove(notification);
 
 
-            await _db.SaveChangesAsync();
-
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return NoContent();
+            }
 
             return NoContent();
         }

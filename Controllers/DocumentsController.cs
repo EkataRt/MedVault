@@ -92,27 +92,47 @@ namespace MedVaultAPI.Controllers
         // POST /documents
         [HttpPost]
         public async Task<IActionResult> CreateDocument(
-            [FromBody] MedDocument document)
+    [FromBody] MedDocument document)
         {
+            if (document == null || string.IsNullOrWhiteSpace(document.UserId))
+            {
+                return BadRequest("UserId is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(document.Name))
+            {
+                return BadRequest("Name is required.");
+            }
+
+            // No DB constraint enforces this anymore - this check is now the only
+            // safeguard against an orphaned/invalid FolderId.
+            if (!string.IsNullOrWhiteSpace(document.FolderId))
+            {
+                var folderExists = await _db.Folder.AnyAsync(
+                    f => f.Id == document.FolderId && f.UserId == document.UserId);
+
+                if (!folderExists)
+                {
+                    return BadRequest("FolderId is invalid or does not belong to this user.");
+                }
+            }
+
             document.Id = Guid.NewGuid().ToString();
+
             if (string.IsNullOrEmpty(document.CreatedAt))
             {
                 document.CreatedAt = DateTime.UtcNow.ToString("O");
             }
+
             _db.MedDocument.Add(document);
             await _db.SaveChangesAsync();
 
-            // Run report analysis after the document is safely saved.
-            // A failure here must never corrupt/roll back document creation -
-            // the document row already exists at this point regardless of outcome.
             try
             {
                 await _reportAnalysisService.AnalyzeDocumentAsync(document);
             }
             catch
             {
-                // AnalyzeDocumentAsync already handles its own failures internally
-                // (sets ProcessingStatus = "Failed"), this is just a final safety net.
             }
 
             return Ok(document);
@@ -139,13 +159,31 @@ namespace MedVaultAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDocument(string id)
         {
-            var document = await _db.MedDocument.FindAsync(id);
+            var document = await _db.MedDocument.FirstOrDefaultAsync(d => d.Id == id);
+
             if (document == null)
             {
                 return NotFound();
             }
-            _db.MedDocument.Remove(document);
-            await _db.SaveChangesAsync();
+
+            using var transaction = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                _db.MedicalTopic.RemoveRange(_db.MedicalTopic.Where(t => t.DocumentId == id));
+                _db.MedicalMeasurement.RemoveRange(_db.MedicalMeasurement.Where(m => m.DocumentId == id));
+                _db.MedDocument.Remove(document);
+
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
+            DeletePhysicalFile(document.FileName);
+
             return NoContent();
         }
         [HttpPost("upload")]
@@ -182,9 +220,8 @@ namespace MedVaultAPI.Controllers
             if (System.IO.File.Exists(filePath))
             {
                 System.IO.File.Delete(filePath);
-                return NoContent();
             }
-            return NotFound();
+            return NoContent(); 
         }
         // POST /documents/{id}/analyze?userId=x
         // Manual trigger for report analysis - primarily for V1 testing.
@@ -201,6 +238,63 @@ namespace MedVaultAPI.Controllers
             }
             await _reportAnalysisService.AnalyzeDocumentAsync(document);
             return Ok(document);
+        }
+        // Shared helper so DeleteDocument and DeleteFile behave identically and
+        // consistently sanitize/contain the path the same way.
+        private bool DeletePhysicalFile(string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return false;
+            }
+
+            var uploadsDir = Path.GetFullPath(
+                Path.Combine(Directory.GetCurrentDirectory(), "Uploads"));
+
+            var safeFileName = Path.GetFileName(fileName);
+            var fullFilePath = Path.GetFullPath(Path.Combine(uploadsDir, safeFileName));
+
+            if (!fullFilePath.StartsWith(uploadsDir, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (System.IO.File.Exists(fullFilePath))
+            {
+                System.IO.File.Delete(fullFilePath);
+                return true;
+            }
+
+            return false;
+        }
+        [HttpGet("reporttypes")]
+        public async Task<IActionResult> ReportTypes(
+           [FromQuery] string userId,string? FolderId)
+        {
+            List<string> results = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(FolderId))
+            {
+                results = await _db.MedDocument.Where(d => d.UserId == userId && d.FolderId == FolderId && d.ReportType != null)
+         .Select(d => d.ReportType!).Distinct().ToListAsync();
+                return Ok(results);
+            }
+            results = await _db.MedDocument.Where(d => d.UserId == userId && d.ReportType != null)
+       .Select(d => d.ReportType!).Distinct().ToListAsync();
+            return Ok(results);
+
+        }
+        [HttpGet("topics")]
+        public async Task<IActionResult> Topics(
+           [FromQuery] string userId)
+        {
+            List<string> results = new List<string>();
+            results = await _db.MedicalTopic.Where(d => d.UserId == userId && d.Topic != null)
+         .Select(d => d.Topic!).Distinct().ToListAsync();
+
+            return Ok(results);
+
+
         }
     }
 }

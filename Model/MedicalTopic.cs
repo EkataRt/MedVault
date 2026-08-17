@@ -1,5 +1,6 @@
 ﻿namespace MedVaultAPI.Model
-{//OCR
+{
+    //OCR
     public class MedicalTopic
     {
         public string Id { get; set; } = string.Empty;
