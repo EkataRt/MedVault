@@ -129,7 +129,27 @@ export class DocumentVaultService {
       { params },
     );
   }
+  public getTopics(userId: string): Observable<string[]> {
+    const params = new HttpParams().set('userId', userId);
 
+    return this.http.get<string[]>(`${this.base}/documents/topics`, {
+      params,
+    });
+  }
+  public getReportTypes(
+    userId: string,
+    folderId?: string,
+  ): Observable<string[]> {
+    let params = new HttpParams().set('userId', userId);
+
+    if (folderId) {
+      params = params.set('FolderId', folderId);
+    }
+
+    return this.http.get<string[]>(`${this.base}/documents/reporttypes`, {
+      params,
+    });
+  }
   public deleteDocument(id: string, fileName: string): Observable<unknown> {
     return this.http.delete(`${this.base}/documents/${id}`).pipe(
       // Updated route: matches /documents/upload/{fileName}

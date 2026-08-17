@@ -214,3 +214,35 @@ ion-searchbar {
 .smart-search-toggle.active {
   animation: brainPulse 2s infinite ease-in-out;
 }
+/* Topics */
+.topics-section {
+  margin: 16px 16px 10px;
+}
+
+.topics-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.topic-chip {
+  border: none;
+  border-radius: 20px;
+  padding: 9px 10px;
+  background-color: #123b68;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+  .topic-chip:hover {
+    background-color: #0d2d50;
+  }
+
+  .topic-chip:active {
+    transform: scale(0.96);
+  }

@@ -15,25 +15,51 @@
 
   <!-- Search Bar -->
   <div class="search-bar-wrapper" [class.smart-active]="smartSearchActive()">
-    <ion-searchbar
-      class="document-search"
-      [placeholder]="searchPlaceholder()"
-      [debounce]="300"
-      [value]="searchQuery()"
-      show-clear-button="never"
-      (ionInput)="onSearch($event)"
-    ></ion-searchbar>
+    <ion-searchbar class="document-search"
+                   [placeholder]="searchPlaceholder()"
+                   [debounce]="300"
+                   [value]="searchQuery()"
+                   show-clear-button="never"
+                   (ionInput)="onSearch($event)"></ion-searchbar>
 
-    <button
-      type="button"
-      class="smart-search-toggle"
-      [class.active]="smartSearchActive()"
-      [attr.aria-label]="smartSearchActive() ? 'Disable Smart Search' : 'Enable Smart Search'"
-      (click)="toggleSmartSearch()"
-    >
+    <button type="button"
+            class="smart-search-toggle"
+            [class.active]="smartSearchActive()"
+            [attr.aria-label]="smartSearchActive() ? 'Disable Smart Search' : 'Enable Smart Search'"
+            (click)="toggleSmartSearch()">
       <img src="assets/icons/brain.png" alt="Smart Search" />
     </button>
   </div>
+  @if (topics().length > 0 && !isSearching()) {
+  <div class="topics-section">
+    <p class="section-label">Topics</p>
+
+    <div class="topics-list">
+      @for (topic of topics(); track topic) {
+      <button type="button"
+              class="topic-chip"
+              (click)="onTopicClick(topic)">
+        {{ topic }}
+      </button>
+      }
+    </div>
+  </div>
+  @if (reportTypes().length > 0 && !isSearching()) {
+  <div class="topics-section report-types-section">
+    <p class="section-label">Report Types</p>
+
+    <div class="topics-list">
+      @for (reportType of reportTypes(); track reportType) {
+      <button type="button"
+              class="topic-chip"
+              (click)="onReportTypeClick(reportType)">
+        {{ reportType }}
+      </button>
+      }
+    </div>
+  </div>
+  }
+  }
 
   <!-- Search Results View -->
   @if (isSearching()) {
@@ -48,10 +74,8 @@
     } @else {
     <ion-list lines="none" class="document-list">
       @for (result of smartSearchResults(); track result.documentId) {
-      <app-smart-search-result-card
-        [result]="result"
-        (resultClick)="onSmartResultClick(result)"
-      />
+      <app-smart-search-result-card [result]="result"
+                                    (resultClick)="onSmartResultClick(result)" />
       }
     </ion-list>
     } } @else {
@@ -64,12 +88,10 @@
     } @else {
     <ion-list lines="none" class="document-list">
       @for (doc of searchResults(); track doc.id) {
-      <app-document-card
-        [document]="doc"
-        (documentClick)="openPreview(doc)"
-        (renameDocument)="onRenameDocument(doc, $event)"
-        (deleteDocument)="onDeleteDocument(doc)"
-      />
+      <app-document-card [document]="doc"
+                         (documentClick)="openPreview(doc)"
+                         (renameDocument)="onRenameDocument(doc, $event)"
+                         (deleteDocument)="onDeleteDocument(doc)" />
       }
     </ion-list>
     } }
@@ -81,10 +103,8 @@
 
   <ion-breadcrumbs class="vault-breadcrumbs">
     @for (item of breadcrumb(); track item.level; let last = $last) {
-    <ion-breadcrumb
-      [class.active]="last"
-      (click)="!last && onBreadcrumbClick(item)"
-    >
+    <ion-breadcrumb [class.active]="last"
+                    (click)="!last && onBreadcrumbClick(item)">
       @if(item.level === 'root') {
       <ion-icon name="folder-outline" slot="start" />
       } {{item.name}}
@@ -101,14 +121,12 @@
     } @else {
     <ion-list lines="none">
       @for(folder of rootFolders(); track folder.id) {
-      <app-folder-card
-        [folder]="folder"
-        [subfolderCount]="subfolderCount()(folder.id)"
-        [fileCount]="fileCount()(folder.id)"
-        (folderClick)="onRootFolderClick(folder)"
-        (renameFolder)="onRenameFolder(folder, $event)"
-        (deleteFolder)="onDeleteFolder(folder)"
-      />
+      <app-folder-card [folder]="folder"
+                       [subfolderCount]="subfolderCount()(folder.id)"
+                       [fileCount]="fileCount()(folder.id)"
+                       (folderClick)="onRootFolderClick(folder)"
+                       (renameFolder)="onRenameFolder(folder, $event)"
+                       (deleteFolder)="onDeleteFolder(folder)" />
       }
     </ion-list>
     } } @if(view() === 'folder') { @if(subfolders().length === 0 &&
@@ -122,14 +140,12 @@
       <p class="section-label">Folders</p>
       <ion-list lines="none">
         @for(folder of subfolders(); track folder.id) {
-        <app-folder-card
-          [folder]="folder"
-          [subfolderCount]="0"
-          [fileCount]="fileCount()(folder.id)"
-          (folderClick)="onSubfolderClick(folder)"
-          (renameFolder)="onRenameFolder(folder, $event)"
-          (deleteFolder)="onDeleteFolder(folder)"
-        />
+        <app-folder-card [folder]="folder"
+                         [subfolderCount]="0"
+                         [fileCount]="fileCount()(folder.id)"
+                         (folderClick)="onSubfolderClick(folder)"
+                         (renameFolder)="onRenameFolder(folder, $event)"
+                         (deleteFolder)="onDeleteFolder(folder)" />
         }
       </ion-list>
     </div>
@@ -138,12 +154,10 @@
       <p class="section-label">Files</p>
       <ion-list lines="none">
         @for(doc of activeDocuments(); track doc.id) {
-        <app-document-card
-          [document]="doc"
-          (documentClick)="openPreview(doc)"
-          (renameDocument)="onRenameDocument(doc, $event)"
-          (deleteDocument)="onDeleteDocument(doc)"
-        />
+        <app-document-card [document]="doc"
+                           (documentClick)="openPreview(doc)"
+                           (renameDocument)="onRenameDocument(doc, $event)"
+                           (deleteDocument)="onDeleteDocument(doc)" />
         }
       </ion-list>
     </div>
@@ -157,12 +171,10 @@
       <p class="section-label">Files</p>
       <ion-list lines="none">
         @for(doc of activeDocuments(); track doc.id) {
-        <app-document-card
-          [document]="doc"
-          (documentClick)="openPreview(doc)"
-          (renameDocument)="onRenameDocument(doc, $event)"
-          (deleteDocument)="onDeleteDocument(doc)"
-        />
+        <app-document-card [document]="doc"
+                           (documentClick)="openPreview(doc)"
+                           (renameDocument)="onRenameDocument(doc, $event)"
+                           (deleteDocument)="onDeleteDocument(doc)" />
         }
       </ion-list>
     </div>
@@ -194,18 +206,14 @@
     </ion-fab-list>
   </ion-fab>
 
-  <app-upload-modal
-    [isOpen]="uploadModalOpen()"
-    [folderId]="activeFolderId() ?? ''"
-    [preloadedFile]="cameraFile()"
-    (documentUploaded)="onDocumentUploaded()"
-    (modalClosed)="closeUploadModal()"
-  />
+  <app-upload-modal [isOpen]="uploadModalOpen()"
+                    [folderId]="activeFolderId() ?? ''"
+                    [preloadedFile]="cameraFile()"
+                    (documentUploaded)="onDocumentUploaded()"
+                    (modalClosed)="closeUploadModal()" />
 
-  <app-image-preview-modal
-    [isOpen]="previewModalOpen()"
-    [document]="activeDocument()"
-    (modalClosed)="closePreviewModal()"
-    (deleteRequested)="onPreviewDeleteRequested()"
-  />
+  <app-image-preview-modal [isOpen]="previewModalOpen()"
+                           [document]="activeDocument()"
+                           (modalClosed)="closePreviewModal()"
+                           (deleteRequested)="onPreviewDeleteRequested()" />
 </ion-content>

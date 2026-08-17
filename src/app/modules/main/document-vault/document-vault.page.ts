@@ -56,11 +56,14 @@ export class DocumentVaultPage implements OnInit {
   // Search state signals
   public readonly searchQuery = signal<string>('');
   public readonly searchResults = signal<MedDocument[]>([]);
+  public readonly topics = signal<string[]>([]);
+  public readonly reportTypes = signal<string[]>([]);
+
   public readonly isSearching = computed(
     () => this.searchQuery().trim().length > 0,
   );
 
-  public readonly smartSearchActive = signal<boolean>(false);
+  public readonly smartSearchActive = signal<boolean>(true);
   public readonly smartSearchResults = signal<SmartSearchResult[]>([]);
 
   public readonly searchPlaceholder = computed(() =>
@@ -77,6 +80,9 @@ export class DocumentVaultPage implements OnInit {
       .loadAll(this.userId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.processPendingPhoto());
+
+    this.loadTopics();
+    this.loadReportTypes();
 
     // Setup debounced search subscription
     this.searchSubject
@@ -98,7 +104,9 @@ export class DocumentVaultPage implements OnInit {
               ? this.vaultService.smartSearchDocuments(this.userId, query)
               : this.vaultService.searchDocuments(this.userId, query);
 
-          return request.pipe(map((results) => ({ isSmartSearch, results })));
+          return request.pipe(
+            map((results) => ({ isSmartSearch, results })),
+          );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -110,17 +118,58 @@ export class DocumentVaultPage implements OnInit {
             this.searchResults.set(results as MedDocument[]);
           }
         },
-        error: () => this.errorMessage.set('Search failed. Please try again.'),
+        error: () =>
+          this.errorMessage.set('Search failed. Please try again.'),
       });
   }
-
+  private loadTopics(): void {
+    this.vaultService
+      .getTopics(this.userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (topics) => {
+          this.topics.set(topics);
+        },
+        error: () => {
+          this.topics.set([]);
+        },
+      });
+  }
+  private loadReportTypes(folderId?: string): void {
+    this.vaultService
+      .getReportTypes(this.userId, folderId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (reportTypes) => {
+          this.reportTypes.set(reportTypes);
+        },
+        error: () => {
+          this.reportTypes.set([]);
+        },
+      });
+  }
   // --- Search Handler ---
   public onSearch(event: any): void {
     const query = event.detail.value ?? '';
     this.searchQuery.set(query);
     this.searchSubject.next(query);
   }
+  public onTopicClick(topic: string): void {
+    this.smartSearchActive.set(true);
+    this.searchQuery.set(topic);
+    this.searchResults.set([]);
+    this.smartSearchResults.set([]);
 
+    this.searchSubject.next(topic);
+  }
+  public onReportTypeClick(reportType: string): void {
+    this.smartSearchActive.set(true);
+    this.searchQuery.set(reportType);
+    this.searchResults.set([]);
+    this.smartSearchResults.set([]);
+
+    this.searchSubject.next(reportType);
+  }
   public clearSearch(): void {
     this.searchQuery.set('');
     this.searchResults.set([]);
@@ -136,12 +185,24 @@ export class DocumentVaultPage implements OnInit {
   // --- Upload Handler ---
   public onDocumentUploaded(): void {
     this.closeUploadModal();
-    // Reload documents list from service to keep data synchronized
+
     if (this.userId) {
-      this.vaultService.loadAll(this.userId).subscribe();
+      this.vaultService
+        .loadAll(this.userId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          // Refresh topics
+          this.loadTopics();
+
+          // Refresh report types according to current location
+          if (this.activeFolderId()) {
+            this.loadReportTypes(this.activeFolderId()!);
+          } else {
+            this.loadReportTypes();
+          }
+        });
     }
   }
-
   // --- Signals & Computed Properties ---
   public readonly rootFolders = computed(() =>
     this.vaultService.folders().filter((f) => f.parentId === null),
@@ -191,19 +252,25 @@ export class DocumentVaultPage implements OnInit {
   public onRootFolderClick(folder: Folder): void {
     this.activeFolderId.set(String(folder.id));
     this.view.set('folder');
+
     this.breadcrumb.set([
       { id: null, level: 'root', name: 'My Vault' },
       { id: String(folder.id), level: 'folder', name: folder.name },
     ]);
+
+    this.loadReportTypes(String(folder.id));
   }
 
   public onSubfolderClick(folder: Folder): void {
     this.activeFolderId.set(String(folder.id));
     this.view.set('subfolder');
+
     this.breadcrumb.update((b) => [
       ...b,
       { id: String(folder.id), level: 'subfolder', name: folder.name },
     ]);
+
+    this.loadReportTypes(String(folder.id));
   }
 
   public onBreadcrumbClick(item: BreadcrumbItem): void {
@@ -211,6 +278,8 @@ export class DocumentVaultPage implements OnInit {
       this.view.set('root');
       this.activeFolderId.set(null);
       this.breadcrumb.set([{ id: null, level: 'root', name: 'My Vault' }]);
+
+      this.loadReportTypes();
     } else if (item.level === 'folder') {
       this.view.set('folder');
       this.activeFolderId.set(item.id);
@@ -402,6 +471,7 @@ export class DocumentVaultPage implements OnInit {
 
     this.activeFolderId.set(folderId);
     this.view.set(view);
+    this.loadReportTypes(folderId);
 
     if (view === 'folder') {
       this.breadcrumb.set([
@@ -489,4 +559,5 @@ export class DocumentVaultPage implements OnInit {
 
     this.openPreview(doc);
   }
+
 }
