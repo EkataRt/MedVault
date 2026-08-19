@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Browser } from '@capacitor/browser';
 import { MedDocument } from '../../../../../models/med-vault-model';
 
 @Component({
@@ -15,8 +15,6 @@ export class ImagePreviewModalComponent {
   public readonly modalClosed = output<void>();
   public readonly deleteRequested = output<void>();
 
-  constructor(private sanitizer: DomSanitizer) { }
-
   public onDismiss(): void {
     this.modalClosed.emit();
   }
@@ -26,7 +24,6 @@ export class ImagePreviewModalComponent {
     this.modalClosed.emit();
   }
 
-  // Fallback to reportDate if available, else createdAt
   public displayDate(): string {
     const doc = this.document();
     if (!doc) return '';
@@ -59,14 +56,13 @@ export class ImagePreviewModalComponent {
     }
   }
 
-  // Detect whether the document URL points to a PDF file
   public isPdf(url: string | null | undefined): boolean {
     if (!url) return false;
     return url.toLowerCase().split('?')[0].endsWith('.pdf');
   }
 
-  // Sanitize the URL so Angular allows it inside an iframe src
-  public safeUrl(url: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  public async openPdf(url: string | null | undefined): Promise<void> {
+    if (!url) return;
+    await Browser.open({ url });
   }
 }
