@@ -20,6 +20,13 @@ const routes: Routes = [
       },
       {
         loadChildren: () =>
+          import('./bmi-history/bmi-history.module').then(
+            (m) => m.BmiHistoryPageModule,
+          ),
+        path: 'bmi-history/:id',
+      },
+      {
+        loadChildren: () =>
           import('./appointments/appointments.module').then(
             (m) => m.AppointmentsPageModule,
           ),

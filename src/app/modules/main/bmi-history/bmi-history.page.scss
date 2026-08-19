@@ -1,0 +1,36 @@
+.bmi-history {
+  padding: 16px;
+
+  &__loading,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    color: var(--ion-color-medium);
+
+    ion-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--ion-color-light-shade);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--ion-color-medium);
+      font-size: 0.85rem;
+    }
+  }
+}

@@ -59,6 +59,10 @@ export class UserInfoCardComponent implements OnChanges {
     this.router.navigate(['/main/settings']);
   }
 
+  protected onBmiClick(): void {
+    if (!this.profile?.id) return;
+    this.router.navigate(['/main/bmi-history', this.profile.id]);
+  }
   private categorizeBmi(bmi: number): BmiCategory {
     if (bmi < BMI_THRESHOLDS.Underweight) return BmiCategory.Underweight;
     if (bmi < BMI_THRESHOLDS.Overweight) return BmiCategory.Normal;

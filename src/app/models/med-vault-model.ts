@@ -28,6 +28,12 @@ export interface HealthProfile {
   userId: string;
   weight: number;
 }
+export interface BmiHistoryEntry {
+  bmi: number;
+  height: number;
+  weight: number;
+  recordedAt: string;
+}
 
 export interface Medicine {
   condition: string;

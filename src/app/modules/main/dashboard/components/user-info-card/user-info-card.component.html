@@ -87,26 +87,24 @@
         </div>
 
         @if (bmi() !== null) {
-          <div class="info-card__stat">
-            <span class="info-card__stat-label">
-              <ion-icon name="person-outline" />
-              BMI
-            </span>
-            <div class="info-card__bmi-inline">
-              <span class="info-card__stat-value">{{ bmi() }}</span>
-              <ion-badge
-                [color]="
+        <div class="info-card__stat info-card__stat--clickable" (click)="onBmiClick()">
+          <span class="info-card__stat-label">
+            <ion-icon name="person-outline" />
+            BMI
+          </span>
+          <div class="info-card__bmi-inline">
+            <span class="info-card__stat-value">{{ bmi() }}</span>
+            <ion-badge [color]="
                   bmiCategory() === BmiCategory.Normal
                     ? 'success'
                     : bmiCategory() === BmiCategory.Overweight
                       ? 'warning'
                       : 'danger'
-                "
-              >
-                {{ bmiCategory() }}
-              </ion-badge>
-            </div>
+                ">
+              {{ bmiCategory() }}
+            </ion-badge>
           </div>
+        </div>
         }
       </div>
 

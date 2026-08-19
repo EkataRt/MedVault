@@ -116,6 +116,10 @@ ion-card {
     gap: 3px;
   }
 
+  .info-card__stat--clickable {
+    cursor: pointer;
+  }
+
   &__quick-stats {
     align-items: center;
     display: flex;
