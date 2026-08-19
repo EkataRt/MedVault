@@ -12,6 +12,7 @@ namespace MedVaultAPI.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<HealthProfile> HealthProfiles { get; set; }
+        public DbSet<BmiHistory> BmiHistories { get; set; }
         public DbSet<Medicine> Medicines { get; set; }
         public DbSet<Place> Place { get; set; }
         public DbSet<Doctor> Doctor { get; set; }
@@ -79,6 +80,29 @@ namespace MedVaultAPI.Data
             {
                 entity.HasKey(m => m.Id);
                 entity.Property(m => m.Name).IsRequired().HasMaxLength(200);
+            });
+            modelBuilder.Entity<Folder>(entity =>
+            {
+                entity.HasKey(f => f.Id);
+                entity.Property(f => f.Name).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<MedDocument>(entity =>
+            {
+                entity.HasKey(d => d.Id);
+                entity.Property(d => d.Name).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<MedicalTopic>(entity =>
+            {
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.Topic).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<MedicalMeasurement>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+                entity.Property(m => m.MeasurementType).IsRequired().HasMaxLength(100);
             });
         }
     }

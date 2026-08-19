@@ -21,13 +21,19 @@ namespace MedVaultAPI.Controllers
             _db = db;
         }
 
+
         private static HealthProfile MapToResponse(HealthProfile profile)
         {
             profile.Allergies = JsonSerializer.Deserialize<List<string>>(
                 profile.AllergiesJson, _jsonOptions) ?? new();
             return profile;
         }
-
+        private static float ComputeBmi(float heightCm, float weightKg)
+        {
+            if (heightCm <= 0 || weightKg <= 0) return 0;
+            var heightM = heightCm / 100f;
+            return (float)Math.Round(weightKg / (heightM * heightM), 2);
+        }
         // GET /healthProfiles?userId=x
         [HttpGet]
         public async Task<IActionResult> GetHealthProfiles([FromQuery] string? userId)
@@ -58,14 +64,27 @@ namespace MedVaultAPI.Controllers
             profile.Id = Guid.NewGuid().ToString();
             profile.CreatedAt = DateTime.UtcNow;
             profile.AllergiesJson = JsonSerializer.Serialize(profile.Allergies, _jsonOptions);
+            profile.Bmi = ComputeBmi(profile.Height, profile.Weight);
 
             _db.HealthProfiles.Add(profile);
             await _db.SaveChangesAsync();
 
+            if (profile.Bmi > 0)
+            {
+                _db.BmiHistories.Add(new BmiHistory
+                {
+                    ProfileId = profile.Id,
+                    Height = profile.Height,
+                    Weight = profile.Weight,
+                    Bmi = profile.Bmi,
+                    RecordedAt = DateTime.UtcNow
+                });
+                await _db.SaveChangesAsync();
+            }
+
             return Ok(MapToResponse(profile));
         }
 
-        // PATCH /healthProfiles/{id}
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateHealthProfile(string id, [FromBody] HealthProfile updated)
         {
@@ -77,13 +96,57 @@ namespace MedVaultAPI.Controllers
             if (!string.IsNullOrEmpty(updated.Sex)) profile.Sex = updated.Sex;
             if (!string.IsNullOrEmpty(updated.LastCheckup)) profile.LastCheckup = updated.LastCheckup;
             if (updated.DateOfBirth != default) profile.DateOfBirth = updated.DateOfBirth;
-            if (updated.Height > 0) profile.Height = updated.Height;
-            if (updated.Weight > 0) profile.Weight = updated.Weight;
+
+            var heightOrWeightChanged = false;
+
+            if (updated.Height > 0 && updated.Height != profile.Height)
+            {
+                profile.Height = updated.Height;
+                heightOrWeightChanged = true;
+            }
+
+            if (updated.Weight > 0 && updated.Weight != profile.Weight)
+            {
+                profile.Weight = updated.Weight;
+                heightOrWeightChanged = true;
+            }
 
             profile.AllergiesJson = JsonSerializer.Serialize(updated.Allergies ?? new(), _jsonOptions);
 
+            if (heightOrWeightChanged)
+                profile.Bmi = ComputeBmi(profile.Height, profile.Weight);
+
             await _db.SaveChangesAsync();
+
+            if (heightOrWeightChanged && profile.Bmi > 0)
+            {
+                _db.BmiHistories.Add(new BmiHistory
+                {
+                    ProfileId = profile.Id,
+                    Height = profile.Height,
+                    Weight = profile.Weight,
+                    Bmi = profile.Bmi,
+                    RecordedAt = DateTime.UtcNow
+                });
+                await _db.SaveChangesAsync();
+            }
+
             return Ok(MapToResponse(profile));
+        }
+
+        // GET /healthProfiles/{id}/bmiHistory
+        [HttpGet("{id}/bmiHistory")]
+        public async Task<IActionResult> GetBmiHistory(string id)
+        {
+            var exists = await _db.HealthProfiles.AnyAsync(h => h.Id == id);
+            if (!exists) return NotFound();
+
+            var history = await _db.BmiHistories
+                .Where(b => b.ProfileId == id)
+                .OrderBy(b => b.RecordedAt)
+                .ToListAsync();
+
+            return Ok(history);
         }
 
         // DELETE /healthProfiles/{id}
@@ -92,6 +155,12 @@ namespace MedVaultAPI.Controllers
         {
             var profile = await _db.HealthProfiles.FindAsync(id);
             if (profile == null) return NotFound();
+
+            // No cascade delete exists since there's no FK — clean up manually
+            var relatedHistory = await _db.BmiHistories
+                .Where(b => b.ProfileId == id)
+                .ToListAsync();
+            _db.BmiHistories.RemoveRange(relatedHistory);
 
             _db.HealthProfiles.Remove(profile);
             await _db.SaveChangesAsync();

@@ -16,6 +16,7 @@ namespace MedVaultAPI.Models
         public string BloodType { get; set; } = string.Empty;
         public float Height { get; set; }
         public float Weight { get; set; }
+        public float Bmi { get; set; }
         public string LastCheckup { get; set; } = string.Empty;
 
         [NotMapped]
